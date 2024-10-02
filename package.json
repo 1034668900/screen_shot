@@ -1,13 +1,15 @@
 {
   "name": "screen-shot",
   "version": "0.0.0",
-  "private": true,
   "main": "dist-electron/main.js",
+  "author": "FengCh",
+  "description": "a screen shot tool",
+  "license": "MIT",
   "scripts": {
-    "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "dev": "chcp 65001 && vite",
+    "build": "chcp 65001 && run-p type-check \"build-only {@}\" --&& electron-builder",
     "preview": "vite preview",
-    "build-only": "vite build",
+    "build-only": "chcp 65001 && vite build && electron-builder",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false"
   },
   "dependencies": {
@@ -20,6 +22,7 @@
     "@vitejs/plugin-vue": "^4.3.4",
     "@vue/tsconfig": "^0.4.0",
     "electron": "^32.1.2",
+    "electron-builder": "^25.0.5",
     "npm-run-all2": "^6.0.6",
     "typescript": "~5.2.0",
     "vite": "^4.4.9",

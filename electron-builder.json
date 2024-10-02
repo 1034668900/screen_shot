@@ -1,0 +1,29 @@
+{
+  "appId": "com.electron.desktop",
+  "asar": true,
+  "copyright": "Copyright © 2022 electron",
+  "directories": {
+    "output": "release/${version}"
+  },
+  "productName": "screen shot",
+  "files": ["dist-electron", "dist"],
+  "mac": {
+    "artifactName": "${productName}_${version}.${ext}",
+    "target": ["dmg"]
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}_${version}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false
+  }
+}
