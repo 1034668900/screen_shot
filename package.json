@@ -6,10 +6,10 @@
   "description": "a screen shot tool",
   "license": "MIT",
   "scripts": {
-    "dev": "chcp 65001 && vite",
-    "build": "chcp 65001 && run-p type-check \"build-only {@}\" --&& electron-builder",
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --&& electron-builder",
     "preview": "vite preview",
-    "build-only": "chcp 65001 && vite build && electron-builder",
+    "build-only": "vite build && electron-builder",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false"
   },
   "dependencies": {

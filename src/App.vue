@@ -1,13 +1,15 @@
 <script setup lang="ts">
-const alertWindow = () => {
-  alert("xixi")
+
+const getWindowSource = async () => {
+  const res = await window.electronAPI.getWindowSource();
+  console.log(res);
 }
-console.log("window",window)
 </script>
 
 <template>
 <div>
-  <button @click="alertWindow">send</button>
+  <button @click="getWindowSource">send</button>
+   hello
 </div>
 </template>
 

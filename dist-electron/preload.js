@@ -1,2 +1,5 @@
 "use strict";
-window.test = "preload";
+const { contextBridge, ipcRenderer } = require("electron");
+contextBridge.exposeInMainWorld("electronAPI", {
+  getWindowSource: () => ipcRenderer.invoke("sources:window")
+});
