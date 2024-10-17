@@ -5,6 +5,7 @@ process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let win;
 const createWindow = () => {
   win = new electron.BrowserWindow({
+    frame: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

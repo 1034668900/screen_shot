@@ -24,6 +24,8 @@
     "electron": "^32.1.2",
     "electron-builder": "^25.0.5",
     "npm-run-all2": "^6.0.6",
+    "sass": "^1.79.4",
+    "sass-loader": "^16.0.2",
     "typescript": "~5.2.0",
     "vite": "^4.4.9",
     "vite-plugin-electron": "^0.28.8",
