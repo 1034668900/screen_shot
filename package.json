@@ -6,7 +6,7 @@
   "description": "a screen shot tool",
   "license": "MIT",
   "scripts": {
-    "dev": "vite",
+    "dev": "chcp 65001 && vite",
     "build": "run-p type-check \"build-only {@}\" --&& electron-builder",
     "preview": "vite preview",
     "build-only": "vite build && electron-builder",

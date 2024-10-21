@@ -1,6 +1,6 @@
 <template>
-  <span @click="handleClick">
-    <component :style="styleSize" ref="iconElement" :is="icon" class="svg-icon"></component>
+  <span class="no-drag" @click="handleClick">
+    <component :style="styleSize" ref="iconElement" :is="icon" :class="svgClass" class="svg-icon"></component>
   </span>
 </template>
 

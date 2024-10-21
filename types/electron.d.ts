@@ -1,6 +1,7 @@
 declare interface Window {
   electronAPI: {
-    getWindowSource: () => Promise<string>;
+    screenShot: () => Promise<string>;
+    closeWindow: () => void;
   };
 }
 

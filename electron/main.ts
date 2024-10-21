@@ -1,12 +1,16 @@
 import { app, BrowserWindow, ipcMain, desktopCapturer } from "electron";
+import { screenShot, createMaskWindow } from "./screenShot";
 import path from "path";
 
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 
-let win: BrowserWindow | null;
+let mainWindow: BrowserWindow | null;
+let maskWindow: BrowserWindow | null;
 const createWindow = () => {
-  win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     frame: false,
+    width: 450,
+    height: 600,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -15,10 +19,10 @@ const createWindow = () => {
   });
 
   if (process.env.VITE_DEV_SERVER_URL) {
-    win.loadURL(process.env.VITE_DEV_SERVER_URL);
-    win.webContents.openDevTools();
+    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+    // mainWindow.webContents.openDevTools();
   } else {
-    win.loadFile(path.join(__dirname, "../dist/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 };
 
@@ -26,7 +30,7 @@ app.whenReady().then(() => {
   addEventListenerOfMain();
   createWindow();
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
   })
 
 });
@@ -35,14 +39,21 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-async function handleGetWindowSources(): Promise<string> {
-  const sources = await desktopCapturer.getSources({ types: ["window"] });
-  return "nihao";
+function handleScreenShot (){
+  console.log("createMaskWindow",__dirname);
+  const maskWindow = createMaskWindow();
+  // const screenSource = screenShot(maskWindow);
+  // maskWindow.show();
+  maskWindow.webContents.openDevTools();
 }
 
 function addEventListenerOfMain(): void {
-  ipcMain.handle("sources:window", handleGetWindowSources);
+  ipcMain.handle("screen:shot", handleScreenShot);
   ipcMain.handle("window:close", () => {
-    win?.close();
+    mainWindow?.close();
   });
+  ipcMain.handle("maskWindow:close", () => {
+    maskWindow?.close();
+  })
+
 }

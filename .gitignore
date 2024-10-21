@@ -16,6 +16,8 @@ dist
 dist-ssr
 coverage
 *.local
+dist-electron
+.gitignore
 
 /cypress/videos/
 /cypress/screenshots/

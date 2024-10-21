@@ -1,5 +1,5 @@
 const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("electronAPI", {
-  getWindowSource: () => ipcRenderer.invoke("sources:window"),
-  closeWindow: () => ipcRenderer.invoke("window:close")
+  screenShot: () => ipcRenderer.invoke("screen:shot"),
+  closeWindow: () => ipcRenderer.invoke("window:close"),
 })

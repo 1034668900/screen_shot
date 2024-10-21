@@ -1,6 +1,7 @@
 <template>
     <div id="header" class="dragable window-title">
-        <SvgIcon :icon="close" size="15" class="no-drag" svgClass="svg-color" @click="handleClose"></SvgIcon>
+        <span class="title">screen-shot</span>
+        <SvgIcon :icon="close" size="15" @click="handleClose"></SvgIcon>
     </div>
 </template>
 
@@ -9,14 +10,23 @@ import SvgIcon from './base/SvgIcon.vue';
 import close from './icons/close.vue';
 
 const handleClose = () => {
-    console.log("adada")
+    window.electronAPI.closeWindow();
 }
 </script>
 
 <style lang="scss" scoped>
 #header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
-    height: 2rem;
+    color: black;
+    border-bottom: 1px solid #808080;
+
+    .title {
+        font-weight: bold;
+        font-family:cursive;
+    }
 }
 
 .dragable {
