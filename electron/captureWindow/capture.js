@@ -1,3 +1,4 @@
+import {captureRender} from "./utils.js";
 
 const DomNames = [
     "#capture-bg",
@@ -17,14 +18,14 @@ DomNames.forEach(name => {
     Doms[domName] = dom;
 });
 
-setBackground(Doms["capture-bg"])
-async function setBackground(element) {
-    if (!element) return;
-    const mainScreen = await getCaptureSources();
-    const imgURL = mainScreen[0].thumbnail.toDataURL();
-    const {screenMaxWidth, screenMaxHeight, screenScaleFactory} = await getScreenSources();
-    element.style.backgroundImage = `url(${imgURL})`
-    element.style.backgroundSize = `${screenMaxWidth}px ${screenMaxHeight}px`
+
+
+startCapture();
+async function startCapture() {
+    const { screenMaxWidth, screenMaxHeight, screenScaleFactory } = await getScreenSources();
+    const windowSources = await getCaptureSources();
+    const imgURL = windowSources[0].thumbnail.toDataURL();
+    new captureRender(Doms["capture-canvas"], Doms["capture-bg"], imgURL, screenMaxWidth, screenMaxHeight, screenScaleFactory)
 }
 
 async function getCaptureSources() {
@@ -34,6 +35,3 @@ async function getCaptureSources() {
 async function getScreenSources() {
     return await window.electronAPI.getScreenSources();
 }
-
-
-
