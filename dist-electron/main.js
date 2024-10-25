@@ -1,23 +1,47 @@
 "use strict";
 const electron = require("electron");
 const path = require("path");
-function createMaskWindow() {
-  const maskWindow = new electron.BrowserWindow({
+const os = require("os");
+async function createCaptureWindow(isDarwin2, width, height) {
+  let captureWindow = new electron.BrowserWindow({
     frame: false,
-    fullscreen: true,
+    fullscreen: !isDarwin2,
+    width,
+    height,
+    x: 0,
+    y: 0,
     transparent: true,
-    backgroundColor: "rgba(0,0,0,.6)",
+    resizable: false,
+    movable: false,
+    autoHideMenuBar: true,
+    enableLargerThanScreen: true,
+    //mac
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    hasShadow: false,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      preload: path.join(__dirname, "../electron/maskWindow/maskWindowPreload.ts")
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, "../electron/preload.ts")
     }
   });
-  maskWindow.loadFile(path.join(__dirname, "../electron/maskWindow/maskWindowHTML.html"));
-  return maskWindow;
+  captureWindow.setAlwaysOnTop(true, "screen-saver");
+  captureWindow.setFullScreenable(false);
+  captureWindow.setVisibleOnAllWorkspaces(true);
+  captureWindow.on("closed", () => {
+    captureWindow = null;
+  });
+  await captureWindow.loadFile(
+    path.join(__dirname, "../electron/captureWindow/capture.html")
+  );
+  return captureWindow;
 }
+const isDarwin = os.platform() === "darwin";
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let mainWindow;
+let screenMaxWidth;
+let screenMaxHeight;
+let screenScaleFactor;
 const createWindow = () => {
   mainWindow = new electron.BrowserWindow({
     frame: false,
@@ -42,21 +66,42 @@ electron.app.whenReady().then(() => {
     if (electron.BrowserWindow.getAllWindows().length === 0)
       createWindow();
   });
+  const { size, scaleFactor } = electron.screen.getPrimaryDisplay();
+  screenMaxWidth = size.width;
+  screenMaxHeight = size.height;
+  screenScaleFactor = scaleFactor;
 });
 electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin")
     electron.app.quit();
 });
-function handleScreenShot() {
-  console.log("createMaskWindow", __dirname);
-  const maskWindow2 = createMaskWindow();
-  maskWindow2.webContents.openDevTools();
+async function handleScreenShot() {
+  console.log("createCaptureWindow", __dirname);
+  const captureWindow2 = await createCaptureWindow(
+    isDarwin,
+    screenMaxWidth,
+    screenMaxHeight
+  );
+  captureWindow2.show();
+}
+async function getCaptureWindowSources() {
+  return await electron.desktopCapturer.getSources({
+    types: ["screen"],
+    thumbnailSize: {
+      width: screenMaxWidth * screenScaleFactor,
+      height: screenMaxHeight * screenScaleFactor
+    }
+  });
 }
 function addEventListenerOfMain() {
   electron.ipcMain.handle("screen:shot", handleScreenShot);
   electron.ipcMain.handle("window:close", () => {
     mainWindow == null ? void 0 : mainWindow.close();
   });
-  electron.ipcMain.handle("maskWindow:close", () => {
+  electron.ipcMain.handle("captureWindow:close", () => {
+  });
+  electron.ipcMain.handle("captureWindow:sources", getCaptureWindowSources);
+  electron.ipcMain.handle("screen:sources", () => {
+    return { screenMaxWidth, screenMaxHeight, screenScaleFactor };
   });
 }
