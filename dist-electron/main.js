@@ -25,6 +25,7 @@ async function createCaptureWindow(isDarwin2, width, height) {
       preload: path.join(__dirname, "../electron/preload.ts")
     }
   });
+  captureWindow.setOpacity(1);
   captureWindow.setAlwaysOnTop(true, "screen-saver");
   captureWindow.setFullScreenable(false);
   captureWindow.setVisibleOnAllWorkspaces(true);
@@ -76,13 +77,11 @@ electron.app.on("window-all-closed", () => {
     electron.app.quit();
 });
 async function handleScreenShot() {
-  console.log("createCaptureWindow", __dirname);
-  const captureWindow2 = await createCaptureWindow(
+  await createCaptureWindow(
     isDarwin,
     screenMaxWidth,
     screenMaxHeight
   );
-  captureWindow2.show();
 }
 async function getCaptureWindowSources() {
   return await electron.desktopCapturer.getSources({

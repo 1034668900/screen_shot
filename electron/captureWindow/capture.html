@@ -25,17 +25,15 @@
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 9999;
+        z-index: -1;
       }
       #capture-mask {
         width: 100vw;
         height: 100vh;
-        background-color: rgba(0, 0, 0, 0.6);
       }
-      #capture-tools {
+      #tool-bar {
         position: absolute;
-        right: 0;
-        bottom: calc(var(--tool-icon-height) * -1.5);
+        height: var(--tool-icon-height);
         width: calc(var(--tool-icon-width) * 4);
         background-color: #f7f7f7;
         display: flex;
@@ -57,12 +55,12 @@
     <div id="capture-bg"></div>
     <div id="capture-mask"></div>
     <canvas id="capture-canvas"></canvas>
-    <div id="capture-tools">
+    <div id="tool-bar">
       <div class="capture-tool" id="operate-rotate">旋转</div>
       <div class="capture-tool" id="operate-download">下载</div>
       <div class="capture-tool" id="operate-cancel">取消</div>
       <div class="capture-tool" id="operate-save">保存</div>
     </div>
-    <script type="module" src="./capture.js"></script>
   </body>
+  <script type="module" src="./capture.js"></script>
 </html>

@@ -43,6 +43,7 @@ export async function createCaptureWindow(
       preload: path.join(__dirname, "../electron/preload.ts")
     },
   });
+  captureWindow.setOpacity(1);
   captureWindow.setAlwaysOnTop(true, "screen-saver");
   captureWindow.setFullScreenable(false);
   captureWindow.setVisibleOnAllWorkspaces(true);

@@ -49,14 +49,13 @@ app.on("window-all-closed", () => {
 });
 
 async function handleScreenShot() {
-  console.log("createCaptureWindow", __dirname);
   const captureWindow = await createCaptureWindow(
     isDarwin,
     screenMaxWidth,
     screenMaxHeight
   );
   // const screenSource = screenShot(captureWindow);
-  captureWindow.show();
+  // captureWindow.show();
   // captureWindow.webContents.openDevTools();
 }
 
