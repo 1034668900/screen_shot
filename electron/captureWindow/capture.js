@@ -1,22 +1,14 @@
-import {captureRender} from "./captureRender.js";
+import { captureRender } from "./captureRender.js";
 
 const DomsName = [
     "capture-bg",
     "capture-mask",
     "capture-canvas",
     "tool-bar",
-    "operate-rotate",
     "operate-download",
     "operate-cancel",
     "operate-save",
 ];
-
-export const operateDoms = [
-    "operate-rotate",
-    "operate-download",
-    "operate-cancel",
-    "operate-save",
-]
 
 const Doms = {};
 let captureInstance;
@@ -40,16 +32,15 @@ Doms["tool-bar"].addEventListener("click", async (e) => {
             await captureInstance.downloadImage();
             break;
         case "operate-cancel":
-            captureInstance.closeCaptureWindow();
+            await captureInstance.closeCaptureWindow();
             break;
         case "operate-save":
             await captureInstance.saveImageToClipboard();
-            captureInstance.closeCaptureWindow();
+            await captureInstance.closeCaptureWindow();
             break;
     }
 })
 
-startCapture();
 async function startCapture() {
     const { screenMaxWidth, screenMaxHeight, screenScaleFactor } = await getScreenSources();
     const windowSources = await getCaptureSources();
@@ -66,6 +57,14 @@ async function getCaptureSources() {
 async function getScreenSources() {
     return await window.electronAPI.getScreenSources();
 }
+
+startCapture();
+
+export const operateDoms = [
+    "operate-download",
+    "operate-cancel",
+    "operate-save",
+]
 
 
 

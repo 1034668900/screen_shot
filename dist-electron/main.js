@@ -65,6 +65,7 @@ const createWindow = () => {
 electron.app.whenReady().then(() => {
   addEventListenerOfMain();
   createWindow();
+  registerShortcut();
   electron.app.on("activate", () => {
     if (electron.BrowserWindow.getAllWindows().length === 0)
       createWindow();
@@ -110,10 +111,11 @@ async function handleDownloadImage(ImageDataURL) {
     const buffer = Buffer.from(base64Data, "base64");
     const { filePath, canceled } = await electron.dialog.showSaveDialog(captureWindow, {
       title: "Download Image",
-      defaultPath: `image.${ext}`
+      defaultPath: `FengCh-${Date.now()}.${ext}`
     });
     if (canceled) {
       captureWindow.close();
+      return;
     }
     await fs.writeFile(filePath, buffer);
     captureWindow.close();
@@ -143,4 +145,15 @@ function addEventListenerOfMain() {
   electron.ipcMain.handle("download:image", (event, ImageDataURL) => {
     handleDownloadImage(ImageDataURL);
   });
+}
+function registerShortcut() {
+  if (os.platform() === "darwin") {
+    electron.globalShortcut.register("Command+P", () => {
+      handleScreenShot();
+    });
+  } else {
+    electron.globalShortcut.register("Ctrl+P", () => {
+      handleScreenShot();
+    });
+  }
 }

@@ -7,6 +7,7 @@ import {
   nativeImage,
   clipboard,
   dialog,
+  globalShortcut
 } from "electron";
 import { createCaptureWindow } from "./captureWindow/createCaptureWindow";
 import path from "path";
@@ -43,6 +44,7 @@ const createWindow = () => {
 app.whenReady().then(() => {
   addEventListenerOfMain();
   createWindow();
+  registerShortcut();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -91,10 +93,11 @@ async function handleDownloadImage(ImageDataURL: string) {
     const buffer = Buffer.from(base64Data, "base64");
     const { filePath, canceled } = await dialog.showSaveDialog(captureWindow, {
       title: "Download Image",
-      defaultPath: `image.${ext}`,
+      defaultPath: `FengCh-${Date.now()}.${ext}`,
     });
     if (canceled) {
       captureWindow.close();
+      return;
     }
     await fs.writeFile(filePath, buffer);
     captureWindow.close();
@@ -125,4 +128,17 @@ function addEventListenerOfMain(): void {
   ipcMain.handle("download:image", (event, ImageDataURL) => {
     handleDownloadImage(ImageDataURL);
   });
+}
+
+function registerShortcut() {
+  if (platform() === "darwin") {
+    globalShortcut.register("Command+P", () => {
+      handleScreenShot();
+    })
+  } else {
+    globalShortcut.register("Ctrl+P", () => {
+      handleScreenShot();
+    })
+  }
+
 }
