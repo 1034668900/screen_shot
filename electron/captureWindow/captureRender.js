@@ -1,3 +1,4 @@
+import { operateDoms } from "./capture.js";
 class captureRender extends Event {
   isMouseDown = false;
   startX = 0;
@@ -18,8 +19,7 @@ class captureRender extends Event {
     super([arguments]);
 
     this.$canvas = $canvas;
-    this.ctx = $canvas.getContext("2d");
-
+    this.ctx = $canvas.getContext("2d",{willReadFrequently : true});
     this.$bg = $bg;
     this.$toolBar = $toolBar;
     this.toolBarWidth = parseInt(getComputedStyle(this.$toolBar).width);
@@ -49,22 +49,30 @@ class captureRender extends Event {
     this.$originBackground = ctx;
     this.addListenerForWindow();
   }
-  // To-DO: 设计实现截图框并将其显示在画布上
 
   addListenerForWindow() {
     window.addEventListener("mousedown", (e) => {
+      if (operateDoms.includes(e.target.id)) {
+        return;
+      }
       this.isMouseDown = true;
       this.startX = e.screenX;
       this.startY = e.screenY;
       this.hideToolBar();
     });
     window.addEventListener("mousemove", (e) => {
+      if (operateDoms.includes(e.target.id)) {
+        return;
+      }
       if (!this.isMouseDown) return;
       this.endX = e.screenX;
       this.endY = e.screenY;
       this.drawRectangle();
     });
     window.addEventListener("mouseup", (e) => {
+      if (operateDoms.includes(e.target.id)) {
+        return;
+      }
       this.isMouseDown = false;
       this.showToolBar();
     });
@@ -114,11 +122,16 @@ class captureRender extends Event {
       height * screenScaleFactor
     );
   }
-  showToolBar() {
+  async showToolBar() {
     this.$toolBar.style.left = `${this.endX - this.toolBarWidth}px`;
     this.$toolBar.style.top = `${this.endY + 10}px`;
     this.$toolBar.style.display = "flex";
+    this.getShotRectImageURL();
   }
+  async saveImageToClipboard() {
+    await window.electronAPI.saveImageToClipboard(this.getShotRectImageURL())
+  }
+
   hideToolBar() {
     this.$toolBar.style.display = "none";
   }
@@ -133,11 +146,19 @@ class captureRender extends Event {
         height * screenScaleFactor
       );
       const canvas = document.createElement("canvas");
+      canvas.width = width * screenScaleFactor;
+      canvas.height = height * screenScaleFactor;
       const ctx = canvas.getContext("2d");
       ctx.putImageData(imageDataURL, 0, 0);
       return canvas.toDataURL();
     }
     return null;
+  }
+  closeCaptureWindow() {
+    window.electronAPI.closeCaptureWindow();
+  }
+  downloadImage() {
+    window.electronAPI.downloadImage(this.getShotRectImageURL());
   }
 }
 

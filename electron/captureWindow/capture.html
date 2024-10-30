@@ -34,7 +34,7 @@
       #tool-bar {
         position: absolute;
         height: var(--tool-icon-height);
-        width: calc(var(--tool-icon-width) * 4);
+        width: calc(var(--tool-icon-width) * 3);
         background-color: #f7f7f7;
         display: flex;
         align-items: center;
@@ -56,11 +56,10 @@
     <div id="capture-mask"></div>
     <canvas id="capture-canvas"></canvas>
     <div id="tool-bar">
-      <div class="capture-tool" id="operate-rotate">旋转</div>
       <div class="capture-tool" id="operate-download">下载</div>
       <div class="capture-tool" id="operate-cancel">取消</div>
       <div class="capture-tool" id="operate-save">保存</div>
     </div>
+    <script type="module" src="./capture.js"></script>
   </body>
-  <script type="module" src="./capture.js"></script>
 </html>

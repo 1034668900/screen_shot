@@ -1,21 +1,5 @@
-import { BrowserWindow, desktopCapturer } from "electron";
+import { BrowserWindow } from "electron";
 import path from "path";
-
-async function handleGetWindowSources(): Promise<string> {
-  const sources = await desktopCapturer.getSources({
-    types: ["window", "screen"],
-  });
-  const fullScreen = sources.filter((source) => source.id === "screen:0:0")[0];
-  const fullScreenContentDataURL = fullScreen.thumbnail.toDataURL();
-  return fullScreenContentDataURL;
-}
-
-export async function screenShot(captureWindow: BrowserWindow | null) {
-  if (!screenShot) return;
-  const screenContentDataURL = await handleGetWindowSources();
-  captureWindow?.show();
-  return screenContentDataURL;
-}
 
 export async function createCaptureWindow(
   isDarwin: boolean,
@@ -40,7 +24,7 @@ export async function createCaptureWindow(
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, "../electron/preload.ts")
+      preload: path.join(__dirname, "preload.js")
     },
   });
   captureWindow.setOpacity(1);

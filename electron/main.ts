@@ -1,10 +1,20 @@
-import { app, BrowserWindow, ipcMain, desktopCapturer, screen } from "electron";
-import { screenShot, createCaptureWindow } from "./captureWindow/screenShot";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  desktopCapturer,
+  screen,
+  nativeImage,
+  clipboard,
+  dialog,
+} from "electron";
+import { createCaptureWindow } from "./captureWindow/createCaptureWindow";
 import path from "path";
+import fs from "fs/promises";
 import { platform } from "os";
+
 const isDarwin = platform() === "darwin";
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
-
 let mainWindow: BrowserWindow | null;
 let captureWindow: BrowserWindow | null;
 let screenMaxWidth: number;
@@ -19,13 +29,12 @@ const createWindow = () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, "../electron/preload.ts"),
+      preload: path.join(__dirname, "../dist-electron/preload.js"),
     },
   });
 
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-    // mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
@@ -49,14 +58,11 @@ app.on("window-all-closed", () => {
 });
 
 async function handleScreenShot() {
-  const captureWindow = await createCaptureWindow(
+  captureWindow = await createCaptureWindow(
     isDarwin,
     screenMaxWidth,
     screenMaxHeight
   );
-  // const screenSource = screenShot(captureWindow);
-  // captureWindow.show();
-  // captureWindow.webContents.openDevTools();
 }
 
 async function getCaptureWindowSources() {
@@ -69,16 +75,54 @@ async function getCaptureWindowSources() {
   });
 }
 
+function handleSaveImageToClipboard(ImageDataURL: string) {
+  const image = nativeImage.createFromDataURL(ImageDataURL);
+  clipboard.writeImage(image);
+}
+
+async function handleDownloadImage(ImageDataURL: string) {
+  try {
+    if (!captureWindow) return;
+    const matches = ImageDataURL.match(/^data:image\/(\w+);base64,(.+)$/);
+    if (!matches) {
+      throw new Error("Invalid data URL");
+    }
+    const [, ext, base64Data] = matches;
+    const buffer = Buffer.from(base64Data, "base64");
+    const { filePath, canceled } = await dialog.showSaveDialog(captureWindow, {
+      title: "Download Image",
+      defaultPath: `image.${ext}`,
+    });
+    if (canceled) {
+      captureWindow.close();
+    }
+    await fs.writeFile(filePath, buffer);
+    captureWindow.close();
+  } catch (error) {
+    throw error;
+  }
+}
+
 function addEventListenerOfMain(): void {
   ipcMain.handle("screen:shot", handleScreenShot);
   ipcMain.handle("window:close", () => {
+    console.log("close mainWindow success!");
     mainWindow?.close();
   });
   ipcMain.handle("captureWindow:close", () => {
+    console.log("close captureWindow success!");
     captureWindow?.close();
   });
   ipcMain.handle("captureWindow:sources", getCaptureWindowSources);
   ipcMain.handle("screen:sources", () => {
+    console.log("get screen:sources success!");
     return { screenMaxWidth, screenMaxHeight, screenScaleFactor };
+  });
+  ipcMain.handle("saveClipboard:image", (event, ImageDataURL) => {
+    console.log("saveClipboard:image success!");
+    handleSaveImageToClipboard(ImageDataURL);
+  });
+  ipcMain.handle("download:image", (event, ImageDataURL) => {
+    handleDownloadImage(ImageDataURL);
   });
 }

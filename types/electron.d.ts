@@ -2,7 +2,9 @@ declare interface Window {
   electronAPI: {
     screenShot: () => Promise<string>;
     closeWindow: () => void;
-    getCaptureWindowSources : () => Promise<DesktopCapturerSource[]>
+    getCaptureWindowSources: () => Promise<DesktopCapturerSource[]>;
+    saveImageToClipboard: (ImageDataURL: string) => Promise<void>;
+    saveImage: () => Promise<void>;
   };
 }
 

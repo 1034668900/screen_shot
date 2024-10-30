@@ -3,5 +3,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   screenShot: () => ipcRenderer.invoke("screen:shot"),
   closeWindow: () => ipcRenderer.invoke("window:close"),
   getCaptureWindowSources: () => ipcRenderer.invoke("captureWindow:sources"),
-  getScreenSources: () => ipcRenderer.invoke("screen:sources")
+  getScreenSources: () => ipcRenderer.invoke("screen:sources"),
+  saveImageToClipboard: (ImageDataURL: string) => ipcRenderer.invoke("saveClipboard:image", ImageDataURL),
+  closeCaptureWindow: () => ipcRenderer.invoke("captureWindow:close"),
+  downloadImage: (ImageDataURL: string) => ipcRenderer.invoke("download:image",ImageDataURL),
 })
