@@ -22,7 +22,7 @@ let screenMaxWidth: number;
 let screenMaxHeight: number;
 let screenScaleFactor: number;
 
-const createWindow = () => {
+const createWindow = async () => {
   mainWindow = new BrowserWindow({
     frame: false,
     width: 450,
@@ -35,6 +35,11 @@ const createWindow = () => {
     },
   });
 
+  captureWindow = await createCaptureWindow(
+    isDarwin,
+    screenMaxWidth,
+    screenMaxHeight
+  );
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
@@ -43,17 +48,16 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
+  const { size, scaleFactor } = screen.getPrimaryDisplay();
+  screenMaxWidth = size.width;
+  screenMaxHeight = size.height;
+  screenScaleFactor = scaleFactor;
   addEventListenerOfMain();
   createWindow();
   registerShortcut();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
-
-  const { size, scaleFactor } = screen.getPrimaryDisplay();
-  screenMaxWidth = size.width;
-  screenMaxHeight = size.height;
-  screenScaleFactor = scaleFactor;
 });
 
 app.on("window-all-closed", () => {
@@ -61,11 +65,10 @@ app.on("window-all-closed", () => {
 });
 
 async function handleScreenShot() {
-  captureWindow = await createCaptureWindow(
-    isDarwin,
-    screenMaxWidth,
-    screenMaxHeight
-  );
+  if (!captureWindow) return;
+  captureWindow.show();
+  captureWindow.webContents.send("start-capture");
+
 }
 
 async function getCaptureWindowSources() {
@@ -97,11 +100,11 @@ async function handleDownloadImage(ImageDataURL: string) {
       defaultPath: `FengCh-${Date.now()}.${ext}`,
     });
     if (canceled) {
-      captureWindow.close();
+      resetCaptureWindow();
       return;
     }
     await fs.writeFile(filePath, buffer);
-    captureWindow.close();
+    resetCaptureWindow();
   } catch (error) {
     throw error;
   }
@@ -109,15 +112,16 @@ async function handleDownloadImage(ImageDataURL: string) {
 
 function addEventListenerOfMain(): void {
   ipcMain.handle("screen:shot", handleScreenShot);
+  ipcMain.handle("captureWindow:sources", getCaptureWindowSources);
   ipcMain.handle("window:close", () => {
     console.log("close mainWindow success!");
     mainWindow?.close();
+    captureWindow?.close();
   });
   ipcMain.handle("captureWindow:close", () => {
     console.log("close captureWindow success!");
-    captureWindow?.close();
+    resetCaptureWindow();
   });
-  ipcMain.handle("captureWindow:sources", getCaptureWindowSources);
   ipcMain.handle("screen:sources", () => {
     console.log("get screen:sources success!");
     return { screenMaxWidth, screenMaxHeight, screenScaleFactor };
@@ -129,6 +133,14 @@ function addEventListenerOfMain(): void {
   ipcMain.handle("download:image", (event, ImageDataURL) => {
     handleDownloadImage(ImageDataURL);
   });
+}
+
+// 解决 captureWindow 隐藏后保留上次截图内容的问题
+async function resetCaptureWindow() {
+  if (!captureWindow) return;
+  console.log("resetCaptureWindow success!");
+  captureWindow.close();
+  captureWindow = await createCaptureWindow(isDarwin, screenMaxWidth, screenMaxHeight);
 }
 
 function registerShortcut() {

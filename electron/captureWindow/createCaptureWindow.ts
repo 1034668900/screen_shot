@@ -35,6 +35,7 @@ export async function createCaptureWindow(
   captureWindow.on("closed", () => { 
     captureWindow = null;
   })
+  captureWindow.hide();
   await captureWindow.loadFile(
     path.join(__dirname, "../electron/captureWindow/capture.html")
   );

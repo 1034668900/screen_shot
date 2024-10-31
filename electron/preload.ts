@@ -6,5 +6,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getScreenSources: () => ipcRenderer.invoke("screen:sources"),
   saveImageToClipboard: (ImageDataURL: string) => ipcRenderer.invoke("saveClipboard:image", ImageDataURL),
   closeCaptureWindow: () => ipcRenderer.invoke("captureWindow:close"),
-  downloadImage: (ImageDataURL: string) => ipcRenderer.invoke("download:image",ImageDataURL),
+  downloadImage: (ImageDataURL: string) => ipcRenderer.invoke("download:image", ImageDataURL),
+  onStartCapture: (startCapture: Function) => ipcRenderer.on("start-capture", (event, arg) => {
+    startCapture();
+  }),
 })

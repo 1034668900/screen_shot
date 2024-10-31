@@ -19,7 +19,7 @@ class captureRender extends Event {
     super([arguments]);
 
     this.$canvas = $canvas;
-    this.ctx = $canvas.getContext("2d",{willReadFrequently : true});
+    this.ctx = $canvas.getContext("2d", {willReadFrequently : true});
     this.$bg = $bg;
     this.$toolBar = $toolBar;
     this.toolBarWidth = parseInt(getComputedStyle(this.$toolBar).width);
@@ -34,22 +34,30 @@ class captureRender extends Event {
     this.$bg.style.backgroundSize = `${this.screenMaxWidth}px ${this.screenMaxHeight}px`;
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const img = await new Promise((resolve) => {
-      const img = new Image();
-      img.src = this.imgSrc;
-      if (img.complete) resolve(img);
-      else img.onload = () => resolve(img);
-    });
-
+    const img = await this.onloadImage(this.imgSrc);
     canvas.width = img.width;
     canvas.height = img.height;
     ctx.drawImage(img, 0, 0);
-    document.body.appendChild(canvas);
     // 存储原始背景，为后续截取作准备
     this.$originBackground = ctx;
     this.addListenerForWindow();
   }
-
+  async showToolBar() {
+    this.$toolBar.style.left = `${this.endX - this.toolBarWidth}px`;
+    this.$toolBar.style.top = `${this.endY + 10}px`;
+    this.$toolBar.style.display = "flex";
+    this.getShotRectImageURL();
+  }
+  async saveImageToClipboard() {
+    await window.electronAPI.saveImageToClipboard(this.getShotRectImageURL())
+  }
+  async onloadImage(imgSrc) {
+    const img = new Image();
+    img.src = imgSrc;
+    return new Promise((resolve) => {
+      img.onload = () => resolve(img);
+    });
+  }
   addListenerForWindow() {
     window.addEventListener("mousedown", (e) => {
       if (operateDoms.includes(e.target.id)) {
@@ -122,16 +130,6 @@ class captureRender extends Event {
       height * screenScaleFactor
     );
   }
-  async showToolBar() {
-    this.$toolBar.style.left = `${this.endX - this.toolBarWidth}px`;
-    this.$toolBar.style.top = `${this.endY + 10}px`;
-    this.$toolBar.style.display = "flex";
-    this.getShotRectImageURL();
-  }
-  async saveImageToClipboard() {
-    await window.electronAPI.saveImageToClipboard(this.getShotRectImageURL())
-  }
-
   hideToolBar() {
     this.$toolBar.style.display = "none";
   }

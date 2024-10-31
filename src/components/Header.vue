@@ -20,9 +20,11 @@ const handleClose = () => {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    color: black;
-    border-bottom: 1px solid #808080;
-
+    height: 2rem;
+    color: #898B95;
+    border-bottom: 1px solid #BBC2CF;
+    background-color: #E3DAE5;
+    padding: 0 0.5rem;
     .title {
         font-weight: bold;
         font-family:cursive;

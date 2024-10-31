@@ -16,7 +16,6 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["click"]);
-console.log("class",props.svgClass);
 
 const styleSize = computed((): string => {
   return `width: ${props.size}px ; height: ${props.size}px`;
