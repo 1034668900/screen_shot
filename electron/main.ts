@@ -28,6 +28,7 @@ const createWindow = () => {
     width: 450,
     height: 600,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "../dist-electron/preload.js"),

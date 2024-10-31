@@ -1,6 +1,6 @@
 {
   "name": "screen-shot",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "main": "dist-electron/main.js",
   "author": "FengCh",
   "description": "a screen shot tool",

@@ -22,6 +22,7 @@ export async function createCaptureWindow(
     alwaysOnTop: true,
     hasShadow: false,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js")

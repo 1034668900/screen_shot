@@ -6,7 +6,6 @@
     "output": "release/${version}"
   },
   "productName": "screen shot",
-  "files": ["dist-electron", "dist"],
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
     "target": ["dmg"]
