@@ -74,7 +74,7 @@ electron.app.whenReady().then(() => {
   const { size, scaleFactor } = electron.screen.getPrimaryDisplay();
   screenMaxWidth = size.width;
   screenMaxHeight = size.height;
-  screenScaleFactor = scaleFactor;
+  screenScaleFactor = Math.ceil(scaleFactor);
   addEventListenerOfMain();
   createWindow();
   registerShortcut();
@@ -94,13 +94,17 @@ async function handleScreenShot() {
   captureWindow.webContents.send("start-capture");
 }
 async function getCaptureWindowSources() {
-  return await electron.desktopCapturer.getSources({
-    types: ["screen"],
-    thumbnailSize: {
-      width: screenMaxWidth * screenScaleFactor,
-      height: screenMaxHeight * screenScaleFactor
-    }
-  });
+  try {
+    return await electron.desktopCapturer.getSources({
+      types: ["screen"],
+      thumbnailSize: {
+        width: screenMaxWidth * screenScaleFactor,
+        height: screenMaxHeight * screenScaleFactor
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
 }
 function handleSaveImageToClipboard(ImageDataURL) {
   const image = electron.nativeImage.createFromDataURL(ImageDataURL);
@@ -169,6 +173,9 @@ function registerShortcut() {
   } else {
     electron.globalShortcut.register("Ctrl+P", () => {
       handleScreenShot();
+    });
+    electron.globalShortcut.register("Ctrl+Shift+A", () => {
+      captureWindow == null ? void 0 : captureWindow.hide();
     });
   }
 }

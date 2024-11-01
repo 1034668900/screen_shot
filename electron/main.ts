@@ -51,7 +51,7 @@ app.whenReady().then(() => {
   const { size, scaleFactor } = screen.getPrimaryDisplay();
   screenMaxWidth = size.width;
   screenMaxHeight = size.height;
-  screenScaleFactor = scaleFactor;
+  screenScaleFactor = Math.ceil(scaleFactor);
   addEventListenerOfMain();
   createWindow();
   registerShortcut();
@@ -72,13 +72,17 @@ async function handleScreenShot() {
 }
 
 async function getCaptureWindowSources() {
-  return await desktopCapturer.getSources({
-    types: ["screen"],
-    thumbnailSize: {
-      width: screenMaxWidth * screenScaleFactor,
-      height: screenMaxHeight * screenScaleFactor,
-    },
-  });
+  try {
+    return await desktopCapturer.getSources({
+      types: ["screen"],
+      thumbnailSize: {
+        width: screenMaxWidth*screenScaleFactor,
+        height: screenMaxHeight*screenScaleFactor,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function handleSaveImageToClipboard(ImageDataURL: string) {
@@ -151,6 +155,10 @@ function registerShortcut() {
   } else {
     globalShortcut.register("Ctrl+P", () => {
       handleScreenShot();
+    })
+    // 测试快捷键，关闭捕获窗口
+    globalShortcut.register("Ctrl+Shift+A",() => {
+      captureWindow?.hide();
     })
   }
 
