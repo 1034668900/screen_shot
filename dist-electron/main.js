@@ -1,14 +1,15 @@
 "use strict";
 const electron = require("electron");
 const path = require("path");
-const fs = require("fs/promises");
 const os = require("os");
-async function createCaptureWindow(isDarwin2, width, height) {
+const fs = require("fs/promises");
+async function createCaptureWindow(createCaptureWindowProps2) {
+  const { screenWidth: screenWidth2, screenHeight: screenHeight2, isDarwin: isDarwin2 } = createCaptureWindowProps2;
   let captureWindow2 = new electron.BrowserWindow({
     frame: false,
     fullscreen: !isDarwin2,
-    width,
-    height,
+    width: screenWidth2,
+    height: screenHeight2,
     x: 0,
     y: 0,
     transparent: true,
@@ -40,13 +41,80 @@ async function createCaptureWindow(isDarwin2, width, height) {
   );
   return captureWindow2;
 }
+async function handleScreenShot(captureWindow2) {
+  if (!captureWindow2)
+    return;
+  captureWindow2.show();
+  captureWindow2.webContents.send("start-capture");
+}
+async function getCaptureWindowSources(screenWidth2, screenHeight2, scaleFactor) {
+  try {
+    return await electron.desktopCapturer.getSources({
+      types: ["screen"],
+      thumbnailSize: {
+        width: screenWidth2 * scaleFactor,
+        height: screenHeight2 * scaleFactor
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+function handleSaveImageToClipboard(ImageDataURL) {
+  const image = electron.nativeImage.createFromDataURL(ImageDataURL);
+  electron.clipboard.writeImage(image);
+}
+async function handleDownloadImage(captureWindow2, ImageDataURL, createCaptureWindowProps2) {
+  try {
+    if (captureWindow2) {
+      const matches = ImageDataURL.match(/^data:image\/(\w+);base64,(.+)$/);
+      if (!matches) {
+        throw new Error("Invalid data URL");
+      }
+      const [, ext, base64Data] = matches;
+      const buffer = Buffer.from(base64Data, "base64");
+      const { filePath, canceled } = await electron.dialog.showSaveDialog(captureWindow2, {
+        title: "Download Image",
+        defaultPath: `FengCh-${Date.now()}.${ext}`
+      });
+      if (canceled) {
+        return await resetCaptureWindow(captureWindow2, createCaptureWindowProps2);
+      }
+      await fs.writeFile(filePath, buffer);
+    }
+    return await resetCaptureWindow(captureWindow2, createCaptureWindowProps2);
+  } catch (error) {
+    console.log(error);
+    return await resetCaptureWindow(captureWindow2, createCaptureWindowProps2);
+  }
+}
+async function resetCaptureWindow(captureWindow2, createCaptureWindowProps2) {
+  captureWindow2 && captureWindow2.close();
+  return await createCaptureWindow(createCaptureWindowProps2);
+}
+function registerShortcut(captureWindow2) {
+  if (os.platform() === "darwin") {
+    console.log("------> registerShotcut success!");
+    electron.globalShortcut.register("Command+P", () => {
+      handleScreenShot(captureWindow2);
+    });
+  } else {
+    electron.globalShortcut.register("Ctrl+P", () => {
+      handleScreenShot(captureWindow2);
+    });
+    electron.globalShortcut.register("Ctrl+Shift+A", () => {
+      captureWindow2 == null ? void 0 : captureWindow2.hide();
+    });
+  }
+}
 const isDarwin = os.platform() === "darwin";
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let mainWindow;
 let captureWindow;
-let screenMaxWidth;
-let screenMaxHeight;
+let screenWidth;
+let screenHeight;
 let screenScaleFactor;
+let createCaptureWindowProps;
 const createWindow = async () => {
   mainWindow = new electron.BrowserWindow({
     frame: false,
@@ -59,11 +127,7 @@ const createWindow = async () => {
       preload: path.join(__dirname, "../dist-electron/preload.js")
     }
   });
-  captureWindow = await createCaptureWindow(
-    isDarwin,
-    screenMaxWidth,
-    screenMaxHeight
-  );
+  captureWindow = await createCaptureWindow(createCaptureWindowProps);
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
@@ -71,13 +135,7 @@ const createWindow = async () => {
   }
 };
 electron.app.whenReady().then(() => {
-  const { size, scaleFactor } = electron.screen.getPrimaryDisplay();
-  screenMaxWidth = size.width;
-  screenMaxHeight = size.height;
-  screenScaleFactor = Math.ceil(scaleFactor);
-  addEventListenerOfMain();
-  createWindow();
-  registerShortcut();
+  init();
   electron.app.on("activate", () => {
     if (electron.BrowserWindow.getAllWindows().length === 0)
       createWindow();
@@ -87,95 +145,47 @@ electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin")
     electron.app.quit();
 });
-async function handleScreenShot() {
-  if (!captureWindow)
-    return;
-  captureWindow.show();
-  captureWindow.webContents.send("start-capture");
-}
-async function getCaptureWindowSources() {
-  try {
-    return await electron.desktopCapturer.getSources({
-      types: ["screen"],
-      thumbnailSize: {
-        width: screenMaxWidth * screenScaleFactor,
-        height: screenMaxHeight * screenScaleFactor
-      }
-    });
-  } catch (error) {
-    console.log(error);
-  }
-}
-function handleSaveImageToClipboard(ImageDataURL) {
-  const image = electron.nativeImage.createFromDataURL(ImageDataURL);
-  electron.clipboard.writeImage(image);
-}
-async function handleDownloadImage(ImageDataURL) {
-  try {
-    if (!captureWindow)
-      return;
-    const matches = ImageDataURL.match(/^data:image\/(\w+);base64,(.+)$/);
-    if (!matches) {
-      throw new Error("Invalid data URL");
-    }
-    const [, ext, base64Data] = matches;
-    const buffer = Buffer.from(base64Data, "base64");
-    const { filePath, canceled } = await electron.dialog.showSaveDialog(captureWindow, {
-      title: "Download Image",
-      defaultPath: `FengCh-${Date.now()}.${ext}`
-    });
-    if (canceled) {
-      resetCaptureWindow();
-      return;
-    }
-    await fs.writeFile(filePath, buffer);
-    resetCaptureWindow();
-  } catch (error) {
-    throw error;
-  }
+async function init() {
+  const { size, scaleFactor } = electron.screen.getPrimaryDisplay();
+  screenWidth = size.width;
+  screenHeight = size.height;
+  screenScaleFactor = Math.ceil(scaleFactor);
+  createCaptureWindowProps = { isDarwin, screenWidth, screenHeight };
+  addEventListenerOfMain();
+  await createWindow();
+  registerShortcut(captureWindow);
 }
 function addEventListenerOfMain() {
-  electron.ipcMain.handle("screen:shot", handleScreenShot);
-  electron.ipcMain.handle("captureWindow:sources", getCaptureWindowSources);
+  electron.ipcMain.handle("screen:shot", () => {
+    handleScreenShot(captureWindow);
+  });
+  electron.ipcMain.handle("captureWindow:sources", () => {
+    console.log("------> get captureWindow:sources success!");
+    return getCaptureWindowSources(
+      screenWidth,
+      screenHeight,
+      screenScaleFactor
+    );
+  });
   electron.ipcMain.handle("window:close", () => {
-    console.log("close mainWindow success!");
+    console.log("------> close mainWindow success!");
     mainWindow == null ? void 0 : mainWindow.close();
     captureWindow == null ? void 0 : captureWindow.close();
   });
-  electron.ipcMain.handle("captureWindow:close", () => {
-    console.log("close captureWindow success!");
-    resetCaptureWindow();
+  electron.ipcMain.handle("captureWindow:close", async () => {
+    console.log("------> close captureWindow success!");
+    captureWindow = await resetCaptureWindow(captureWindow, createCaptureWindowProps);
   });
   electron.ipcMain.handle("screen:sources", () => {
-    console.log("get screen:sources success!");
-    return { screenMaxWidth, screenMaxHeight, screenScaleFactor };
+    console.log("------> get screen:sources success!");
+    return { screenWidth, screenHeight, screenScaleFactor };
   });
   electron.ipcMain.handle("saveClipboard:image", (event, ImageDataURL) => {
-    console.log("saveClipboard:image success!");
+    console.log("------> saveClipboard:image success!");
     handleSaveImageToClipboard(ImageDataURL);
   });
-  electron.ipcMain.handle("download:image", (event, ImageDataURL) => {
-    handleDownloadImage(ImageDataURL);
+  electron.ipcMain.handle("download:image", async (event, ImageDataURL) => {
+    console.log("------> download:image success!");
+    captureWindow = await handleDownloadImage(captureWindow, ImageDataURL, createCaptureWindowProps);
   });
-}
-async function resetCaptureWindow() {
-  if (!captureWindow)
-    return;
-  console.log("resetCaptureWindow success!");
-  captureWindow.close();
-  captureWindow = await createCaptureWindow(isDarwin, screenMaxWidth, screenMaxHeight);
-}
-function registerShortcut() {
-  if (os.platform() === "darwin") {
-    electron.globalShortcut.register("Command+P", () => {
-      handleScreenShot();
-    });
-  } else {
-    electron.globalShortcut.register("Ctrl+P", () => {
-      handleScreenShot();
-    });
-    electron.globalShortcut.register("Ctrl+Shift+A", () => {
-      captureWindow == null ? void 0 : captureWindow.hide();
-    });
-  }
 }

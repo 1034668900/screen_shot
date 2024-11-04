@@ -12,7 +12,7 @@ const DomsName = [
 
 const Doms = {};
 let captureInstance;
-let screenMaxWidth, screenMaxHeight, screenScaleFactor;
+let screenWidth, screenHeight, screenScaleFactor;
 
 getDoms(DomsName);
 
@@ -50,8 +50,8 @@ async function startCapture() {
     Doms["capture-bg"],
     Doms["tool-bar"],
     imgURL,
-    screenMaxWidth,
-    screenMaxHeight,
+    screenWidth,
+    screenHeight,
     screenScaleFactor
   );
 }
@@ -69,8 +69,8 @@ window.electronAPI.onStartCapture(startCapture);
 
 window.addEventListener("DOMContentLoaded", async () => {
   const screenSources = await getScreenSources();
-  screenMaxWidth = screenSources.screenMaxWidth;
-  screenMaxHeight = screenSources.screenMaxHeight;
+  screenWidth = screenSources.screenWidth;
+  screenHeight = screenSources.screenHeight;
   screenScaleFactor = screenSources.screenScaleFactor;
 });
 

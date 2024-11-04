@@ -1,16 +1,14 @@
 import { BrowserWindow } from "electron";
 import path from "path";
+import type { CreateCaptureWindowProps } from "../utils.ts";
 
-export async function createCaptureWindow(
-  isDarwin: boolean,
-  width: number,
-  height: number
-): Promise<BrowserWindow> {
+export async function createCaptureWindow(createCaptureWindowProps: CreateCaptureWindowProps): Promise<BrowserWindow> {
+  const { screenWidth, screenHeight, isDarwin } = createCaptureWindowProps;
   let captureWindow: null | BrowserWindow = new BrowserWindow({
     frame: false,
     fullscreen: !isDarwin,
-    width,
-    height,
+    width: screenWidth,
+    height: screenHeight,
     x: 0,
     y: 0,
     transparent: true,

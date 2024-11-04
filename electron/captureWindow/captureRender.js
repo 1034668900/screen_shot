@@ -12,9 +12,9 @@ class captureRender extends Event {
     $bg,
     $toolBar,
     imgSrc,
-    screenMaxWidth,
-    screenMaxHeight,
-    screenScaleFactor
+    width,
+    height,
+    scaleFactor
   ) {
     super([arguments]);
 
@@ -24,14 +24,14 @@ class captureRender extends Event {
     this.$toolBar = $toolBar;
     this.toolBarWidth = parseInt(getComputedStyle(this.$toolBar).width);
     this.imgSrc = imgSrc;
-    this.screenMaxWidth = screenMaxWidth;
-    this.screenMaxHeight = screenMaxHeight;
-    this.screenScaleFactor = screenScaleFactor;
+    this.width = width;
+    this.height = height;
+    this.scaleFactor = scaleFactor;
     this.init();
   }
   async init() {
     this.$bg.style.backgroundImage = `url(${this.imgSrc})`;
-    this.$bg.style.backgroundSize = `${this.screenMaxWidth}px ${this.screenMaxHeight}px`;
+    this.$bg.style.backgroundSize = `${this.width}px ${this.height}px`;
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const img = await this.onloadImage(this.imgSrc);
@@ -94,13 +94,13 @@ class captureRender extends Event {
     this.endY = endY;
     const width = endX - startX;
     const height = endY - startY;
-    const screenScaleFactor = this.screenScaleFactor;
+    const scaleFactor = this.scaleFactor;
     const margin = 7;
 
     this.shotRect = { startX, startY, width, height };
 
-    this.$canvas.width = (width + margin * 2) * screenScaleFactor;
-    this.$canvas.height = (height + margin * 2) * screenScaleFactor;
+    this.$canvas.width = (width + margin * 2) * scaleFactor;
+    this.$canvas.height = (height + margin * 2) * scaleFactor;
     this.$canvas.style.position = "absolute";
     this.$canvas.style.left = `${startX - margin}px`;
     this.$canvas.style.top = `${startY - margin}px`;
@@ -109,25 +109,25 @@ class captureRender extends Event {
     this.$canvas.style.height = `${height + margin * 2}px`;
     if (width && height) {
       const imageDataURL = this.$originBackground.getImageData(
-        startX * screenScaleFactor,
-        startY * screenScaleFactor,
-        width * screenScaleFactor,
-        height * screenScaleFactor
+        startX * scaleFactor,
+        startY * scaleFactor,
+        width * scaleFactor,
+        height * scaleFactor
       );
       this.ctx.putImageData(
         imageDataURL,
-        margin * screenScaleFactor,
-        margin * screenScaleFactor
+        margin * scaleFactor,
+        margin * scaleFactor
       );
     }
     this.ctx.fillStyle = "#FFFFFF";
     this.ctx.strokeStyle = "#67BADE";
-    this.ctx.lineWidth = 2 * screenScaleFactor;
+    this.ctx.lineWidth = 2 * scaleFactor;
     this.ctx.strokeRect(
-      margin * screenScaleFactor,
-      margin * screenScaleFactor,
-      width * screenScaleFactor,
-      height * screenScaleFactor
+      margin * scaleFactor,
+      margin * scaleFactor,
+      width * scaleFactor,
+      height * scaleFactor
     );
   }
   hideToolBar() {
@@ -135,17 +135,17 @@ class captureRender extends Event {
   }
   getShotRectImageURL() {
     const { startX, startY, width, height } = this.shotRect;
-    const screenScaleFactor = this.screenScaleFactor;
+    const scaleFactor = this.scaleFactor;
     if (width && height) {
       const imageDataURL = this.$originBackground.getImageData(
-        startX * screenScaleFactor,
-        startY * screenScaleFactor,
-        width * screenScaleFactor,
-        height * screenScaleFactor
+        startX * scaleFactor,
+        startY * scaleFactor,
+        width * scaleFactor,
+        height * scaleFactor
       );
       const canvas = document.createElement("canvas");
-      canvas.width = width * screenScaleFactor;
-      canvas.height = height * screenScaleFactor;
+      canvas.width = width * scaleFactor;
+      canvas.height = height * scaleFactor;
       const ctx = canvas.getContext("2d");
       ctx.putImageData(imageDataURL, 0, 0);
       return canvas.toDataURL();
