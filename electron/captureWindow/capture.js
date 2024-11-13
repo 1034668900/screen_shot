@@ -11,69 +11,70 @@ const DomsName = [
 ];
 
 const Doms = {};
-let captureInstance;
-let screenWidth, screenHeight, screenScaleFactor;
+let captureInstance, screenData, captureWindowId;
 
-getDoms(DomsName);
+initDoms(DomsName);
+initEvent();
 
-function getDoms(DomsName) {
+function initDoms(DomsName) {
   DomsName.forEach((name) => {
     let domName = "#" + name;
     const dom = document.querySelector(domName);
     Doms[name] = dom;
   });
+
+  Doms["tool-bar"].addEventListener("click", async (e) => {
+    console.log(`------> start ${e.target.id}`);
+    switch (e.target.id) {
+      case "operate-download":
+        await captureInstance.downloadImage(captureWindowId);
+        break;
+      case "operate-cancel":
+        await captureInstance.closeCaptureWindow();
+        break;
+      case "operate-save":
+        await captureInstance.saveImageToClipboard();
+        await captureInstance.closeCaptureWindow();
+        break;
+    }
+  });
 }
 
-Doms["tool-bar"].addEventListener("click", async (e) => {
-  console.log(`start ${e.target.id}`);
-  switch (e.target.id) {
-    case "operate-download":
-      await captureInstance.downloadImage();
-      break;
-    case "operate-cancel":
-      await captureInstance.closeCaptureWindow();
-      break;
-    case "operate-save":
-      await captureInstance.saveImageToClipboard();
-      await captureInstance.closeCaptureWindow();
-      break;
-  }
-});
+function initEvent() {
+  window.electronAPI.onStartCapture(startCapture);
+
+  window.electronAPI.transportScreenAndWindowData((args) => {
+    const data = JSON.parse(args);
+    screenData = data.screenData;
+    captureWindowId = data.captureWindowId;
+  });
+}
 
 async function startCapture() {
-  const windowSources = await getCaptureSources();
+  const windowSource = await getCaptureSources();
   // 窗口内容获取成功后在调整mask颜色，否则会影响原图
   Doms["capture-mask"].style.background = "rgba(0,0,0,0.6)";
-  const imgURL = windowSources[0].thumbnail.toDataURL();
+  const imgURL = windowSource.thumbnail.toDataURL();
   captureInstance = new captureRender(
     Doms["capture-canvas"],
     Doms["capture-bg"],
     Doms["tool-bar"],
     imgURL,
-    screenWidth,
-    screenHeight,
-    screenScaleFactor
+    screenData
   );
 }
 
 async function getCaptureSources() {
-  return await window.electronAPI.getCaptureWindowSources();
+  return await window.electronAPI.getCaptureWindowSources(
+    screenData.id,
+    screenData.size.width,
+    screenData.size.height,
+    screenData.scaleFactor
+  );
 }
 
-async function getScreenSources() {
-  return await window.electronAPI.getScreenSources();
-}
-
-
-window.electronAPI.onStartCapture(startCapture);
-
-window.addEventListener("DOMContentLoaded", async () => {
-  const screenSources = await getScreenSources();
-  screenWidth = screenSources.screenWidth;
-  screenHeight = screenSources.screenHeight;
-  screenScaleFactor = screenSources.screenScaleFactor;
-});
-
-const operateDoms = ["operate-download", "operate-cancel", "operate-save"];
-
-export { startCapture, operateDoms };
+export const operateDoms = [
+  "operate-download",
+  "operate-cancel",
+  "operate-save",
+];

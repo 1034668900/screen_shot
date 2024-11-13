@@ -3,14 +3,14 @@ import path from "path";
 import type { CreateCaptureWindowProps } from "../utils.ts";
 
 export async function createCaptureWindow(createCaptureWindowProps: CreateCaptureWindowProps): Promise<BrowserWindow> {
-  const { screenWidth, screenHeight, isDarwin } = createCaptureWindowProps;
-  let captureWindow: null | BrowserWindow = new BrowserWindow({
+  const { x, y, screenWidth, screenHeight, isDarwin } = createCaptureWindowProps;
+  let captureWindow: BrowserWindow = new BrowserWindow({
     frame: false,
     fullscreen: !isDarwin,
     width: screenWidth,
     height: screenHeight,
-    x: 0,
-    y: 0,
+    x,
+    y,
     transparent: true,
     resizable: false,
     movable: false,
@@ -31,7 +31,7 @@ export async function createCaptureWindow(createCaptureWindowProps: CreateCaptur
   captureWindow.setFullScreenable(false);
   captureWindow.setVisibleOnAllWorkspaces(true);
   captureWindow.on("closed", () => { 
-    captureWindow = null;
+    captureWindow.destroy();
   })
   captureWindow.hide();
   await captureWindow.loadFile(

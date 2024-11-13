@@ -1,31 +1,33 @@
 import { operateDoms } from "./capture.js";
 class captureRender extends Event {
   isMouseDown = false;
+  relativeX = 0;
+  relativeY = 0;
   startX = 0;
   startY = 0;
   endX = 0;
   endY = 0;
-  shotRect = null;
+  shotRect = {};
 
   constructor(
     $canvas,
     $bg,
     $toolBar,
     imgSrc,
-    width,
-    height,
-    scaleFactor
+    screenData
   ) {
     super([arguments]);
-
+    const { bounds, scaleFactor, size  } = screenData;
     this.$canvas = $canvas;
     this.ctx = $canvas.getContext("2d", {willReadFrequently : true});
     this.$bg = $bg;
     this.$toolBar = $toolBar;
     this.toolBarWidth = parseInt(getComputedStyle(this.$toolBar).width);
     this.imgSrc = imgSrc;
-    this.width = width;
-    this.height = height;
+    this.width = size.width;
+    this.height = size.height;
+    this.relativeX = bounds.x;
+    this.relativeY = bounds.y;
     this.scaleFactor = scaleFactor;
     this.init();
   }
@@ -86,10 +88,10 @@ class captureRender extends Event {
     });
   }
   drawRectangle() {
-    const startX = Math.min(this.startX, this.endX);
-    const startY = Math.min(this.startY, this.endY);
-    const endX = Math.max(this.startX, this.endX);
-    const endY = Math.max(this.startY, this.endY);
+    const startX = Math.min(this.startX, this.endX) - this.relativeX;
+    const startY = Math.min(this.startY, this.endY) - this.relativeY;
+    const endX = Math.max(this.startX, this.endX) - this.relativeX;
+    const endY = Math.max(this.startY, this.endY) - this.relativeY;
     this.endX = endX;
     this.endY = endY;
     const width = endX - startX;
@@ -98,7 +100,6 @@ class captureRender extends Event {
     const margin = 7;
 
     this.shotRect = { startX, startY, width, height };
-
     this.$canvas.width = (width + margin * 2) * scaleFactor;
     this.$canvas.height = (height + margin * 2) * scaleFactor;
     this.$canvas.style.position = "absolute";
@@ -155,8 +156,8 @@ class captureRender extends Event {
   closeCaptureWindow() {
     window.electronAPI.closeCaptureWindow();
   }
-  downloadImage() {
-    window.electronAPI.downloadImage(this.getShotRectImageURL());
+  downloadImage(id) {
+    window.electronAPI.downloadImage(id, this.getShotRectImageURL());
   }
 }
 

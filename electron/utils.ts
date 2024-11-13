@@ -1,12 +1,20 @@
-import { type BrowserWindow, desktopCapturer, nativeImage, clipboard, dialog, globalShortcut } from "electron";
+import { type BrowserWindow, desktopCapturer, nativeImage, clipboard, dialog, screen } from "electron";
 import fs from "fs/promises";
-import { platform } from "os";
 import { createCaptureWindow } from "./captureWindow/createCaptureWindow";
 
-async function handleScreenShot(captureWindow: BrowserWindow | null) {
+type Size = { width: number; height: number };
+
+export type ScreenData = {
+  id: number;
+  size: Size;
+  bounds: { x: number; y: number } & Size;
+  scaleFactor: number;
+}
+
+function handleScreenShot(captureWindow: BrowserWindow | null) {
   if (!captureWindow) return;
-  captureWindow.show();
   captureWindow.webContents.send("start-capture");
+  captureWindow.show();
 }
 
 async function getCaptureWindowSources(screenWidth: number, screenHeight: number, scaleFactor: number) {
@@ -28,57 +36,49 @@ function handleSaveImageToClipboard(ImageDataURL: string) {
   clipboard.writeImage(image);
 }
 
-async function handleDownloadImage(captureWindow: BrowserWindow, ImageDataURL: string, createCaptureWindowProps: CreateCaptureWindowProps): Promise<BrowserWindow> {
+async function handleDownloadImage(captureWindow: BrowserWindow, ImageDataURL: string){
   try {
-    if (captureWindow) {
-      const matches = ImageDataURL.match(/^data:image\/(\w+);base64,(.+)$/);
-      if (!matches) {
-        throw new Error("Invalid data URL");
-      }
-      const [, ext, base64Data] = matches;
-      const buffer = Buffer.from(base64Data, "base64");
-      const { filePath, canceled } = await dialog.showSaveDialog(captureWindow, {
-        title: "Download Image",
-        defaultPath: `FengCh-${Date.now()}.${ext}`,
-      });
-      if (canceled) {
-        return await resetCaptureWindow(captureWindow, createCaptureWindowProps);
-      }
-      await fs.writeFile(filePath, buffer);
+    if (!captureWindow) return false;
+    const matches = ImageDataURL.match(/^data:image\/(\w+);base64,(.+)$/);
+    if (!matches) {
+      throw new Error("Invalid data URL");
     }
-    return await resetCaptureWindow(captureWindow, createCaptureWindowProps);
+    const [, ext, base64Data] = matches;
+    const buffer = Buffer.from(base64Data, "base64");
+    const { filePath, canceled } = await dialog.showSaveDialog(captureWindow, {
+      title: "Download Image",
+      defaultPath: `FengCh-${Date.now()}.${ext}`,
+    });
+    if (canceled) return;
+    await fs.writeFile(filePath, buffer);
   } catch (error) {
     console.log(error);
-    return await resetCaptureWindow(captureWindow, createCaptureWindowProps);
   }
 }
 
-async function resetCaptureWindow(captureWindow: BrowserWindow | null, createCaptureWindowProps: CreateCaptureWindowProps): Promise<BrowserWindow> {
-  captureWindow && captureWindow.close();
-  return await createCaptureWindow(createCaptureWindowProps)
+function getAllDisplays(): ScreenData[] {
+  const screens = screen.getAllDisplays();
+  let screenDatas: ScreenData[] = [];
+  screens.forEach(screen => {
+    let tempScreenData: ScreenData = {
+      id: screen.id,
+      size: screen.size,
+      bounds: screen.bounds,
+      scaleFactor: Math.ceil(screen.scaleFactor)
+    }
+    screenDatas.push(tempScreenData);
+  })
+  return screenDatas;
 }
 
-function registerShortcut(captureWindow: BrowserWindow | null) {
-  if (platform() === "darwin") {
-    console.log("------> registerShotcut success!");
-    globalShortcut.register("Command+P", () => {
-      handleScreenShot(captureWindow);
-    });
-  } else {
-    globalShortcut.register("Ctrl+P", () => {
-      handleScreenShot(captureWindow);
-    });
-    // 测试快捷键，关闭捕获窗口
-    globalShortcut.register("Ctrl+Shift+A", () => {
-      captureWindow?.hide();
-    });
-  }
-}
+
 
 export type CreateCaptureWindowProps = {
   isDarwin: boolean;
   screenWidth: number;
   screenHeight: number;
+  x?: number;
+  y?: number;
 }
 
-export { getCaptureWindowSources, handleSaveImageToClipboard, handleDownloadImage, resetCaptureWindow, registerShortcut, handleScreenShot };
+export { getCaptureWindowSources, handleSaveImageToClipboard, handleDownloadImage, handleScreenShot, getAllDisplays };
