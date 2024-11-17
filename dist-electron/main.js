@@ -28,12 +28,18 @@ async function createCaptureWindow(createCaptureWindowProps2) {
       preload: path.join(__dirname, "preload.js")
     }
   });
+<<<<<<< Updated upstream
   captureWindow2.setOpacity(1);
   captureWindow2.setAlwaysOnTop(true, "screen-saver");
   captureWindow2.setFullScreenable(false);
   captureWindow2.setVisibleOnAllWorkspaces(true);
   captureWindow2.on("closed", () => {
     captureWindow2.destroy();
+=======
+  console.log("@@@@create", screenWidth, screenHeight);
+  captureWindow.on("closed", () => {
+    captureWindow.destroy();
+>>>>>>> Stashed changes
   });
   captureWindow2.hide();
   await captureWindow2.loadFile(
@@ -224,7 +230,13 @@ function registerShortcut() {
     electron.globalShortcut.register("Ctrl+P", () => {
       handleScreenShot(captureWindow);
     });
+<<<<<<< Updated upstream
     electron.globalShortcut.register("Ctrl+Shift+A", () => {
+=======
+    electron.globalShortcut.register("Esc", () => {
+      closeCaptureWindows();
+      preloadCaptureWindows();
+>>>>>>> Stashed changes
     });
   }
 }

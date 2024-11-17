@@ -29,20 +29,27 @@ class captureRender extends Event {
     this.relativeX = bounds.x;
     this.relativeY = bounds.y;
     this.scaleFactor = scaleFactor;
+    console.log("@@@relative",bounds);
     this.init();
   }
   async init() {
     this.$bg.style.backgroundImage = `url(${this.imgSrc})`;
-    this.$bg.style.backgroundSize = `${this.width}px ${this.height}px`;
+    this.$bg.style.backgroundSize = `${this.width}px,${this.height}px`;
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const img = await this.onloadImage(this.imgSrc);
+<<<<<<< Updated upstream
     canvas.width = img.width;
     canvas.height = img.height;
+=======
+    canvas.width = this.width * this.scaleFactor;
+    canvas.height = this.height * this.scaleFactor;
+>>>>>>> Stashed changes
     ctx.drawImage(img, 0, 0);
     // 存储原始背景，为后续截取作准备
     this.$originBackground = ctx;
     this.addListenerForWindow();
+    console.log("@@@@@canvas",ctx.getImageData(0,0,200,200));
   }
   async showToolBar() {
     this.$toolBar.style.left = `${this.endX - this.toolBarWidth}px`;
@@ -80,6 +87,9 @@ class captureRender extends Event {
       this.drawRectangle();
     });
     window.addEventListener("mouseup", (e) => {
+      console.log("@@@@@Emove\\",this.endX,this.endY
+      );
+
       if (operateDoms.includes(e.target.id)) {
         return;
       }
@@ -97,39 +107,42 @@ class captureRender extends Event {
     const width = endX - startX;
     const height = endY - startY;
     const scaleFactor = this.scaleFactor;
-    const margin = 7;
+    const margin = 1;
+    const canvasWidth = width;
+    const canvasHeight = height;
 
     this.shotRect = { startX, startY, width, height };
-    this.$canvas.width = (width + margin * 2) * scaleFactor;
-    this.$canvas.height = (height + margin * 2) * scaleFactor;
+    this.$canvas.width = canvasWidth * scaleFactor;
+    this.$canvas.height = canvasHeight * scaleFactor;
     this.$canvas.style.position = "absolute";
-    this.$canvas.style.left = `${startX - margin}px`;
-    this.$canvas.style.top = `${startY - margin}px`;
+    this.$canvas.style.left = `${startX}px`;
+    this.$canvas.style.top = `${startY}px`;
     this.$canvas.style.display = "block";
-    this.$canvas.style.width = `${width + margin * 2}px`;
-    this.$canvas.style.height = `${height + margin * 2}px`;
+    this.$canvas.style.width = `${canvasWidth}px`;
+    this.$canvas.style.height = `${canvasHeight}px`;
+    this.$canvas.style.border = "1px solid red";
     if (width && height) {
-      const imageDataURL = this.$originBackground.getImageData(
+      const imgDataURL = this.$originBackground.getImageData(
         startX * scaleFactor,
         startY * scaleFactor,
         width * scaleFactor,
         height * scaleFactor
       );
       this.ctx.putImageData(
-        imageDataURL,
+        imgDataURL,
         margin * scaleFactor,
         margin * scaleFactor
       );
     }
-    this.ctx.fillStyle = "#FFFFFF";
-    this.ctx.strokeStyle = "#67BADE";
-    this.ctx.lineWidth = 2 * scaleFactor;
-    this.ctx.strokeRect(
-      margin * scaleFactor,
-      margin * scaleFactor,
-      width * scaleFactor,
-      height * scaleFactor
-    );
+    // this.ctx.fillStyle = "#FFFFFF";
+    // this.ctx.strokeStyle = "#67BADE";
+    // this.ctx.lineWidth = 2 * scaleFactor;
+    // this.ctx.strokeRect(
+    //   0 * scaleFactor,
+    //   margin * scaleFactor,
+    //   width * scaleFactor,
+    //   height * scaleFactor
+    // );
   }
   hideToolBar() {
     this.$toolBar.style.display = "none";
@@ -138,7 +151,7 @@ class captureRender extends Event {
     const { startX, startY, width, height } = this.shotRect;
     const scaleFactor = this.scaleFactor;
     if (width && height) {
-      const imageDataURL = this.$originBackground.getImageData(
+      const imgDataURL = this.$originBackground.getImageData(
         startX * scaleFactor,
         startY * scaleFactor,
         width * scaleFactor,
@@ -148,7 +161,7 @@ class captureRender extends Event {
       canvas.width = width * scaleFactor;
       canvas.height = height * scaleFactor;
       const ctx = canvas.getContext("2d");
-      ctx.putImageData(imageDataURL, 0, 0);
+      ctx.putImageData(imgDataURL, 0, 0);
       return canvas.toDataURL();
     }
     return null;

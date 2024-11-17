@@ -51,6 +51,7 @@ function initEvent() {
 }
 
 async function startCapture() {
+<<<<<<< Updated upstream
   const windowSource = await getCaptureSources();
   // 窗口内容获取成功后在调整mask颜色，否则会影响原图
   Doms["capture-mask"].style.background = "rgba(0,0,0,0.6)";
@@ -62,6 +63,24 @@ async function startCapture() {
     imgURL,
     screenData
   );
+=======
+  const imgBuffer = await getCaptureSources();
+  const imgBlob = new Blob([imgBuffer], {type:"image/png"});
+  Doms["capture-mask"].style.background = "rgba(0, 0, 0, .6)";
+  document.body.style.width = screenData.size.width + 'px';
+  document.body.style.height = screenData.size.height + 'px';
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    captureInstance = new captureRender(
+      Doms["capture-canvas"],
+      Doms["capture-bg"],
+      Doms["tool-bar"],
+      reader.result,
+      screenData
+    );
+  }
+  reader.readAsDataURL(imgBlob);
+>>>>>>> Stashed changes
 }
 
 async function getCaptureSources() {

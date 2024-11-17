@@ -26,10 +26,18 @@ export async function createCaptureWindow(createCaptureWindowProps: CreateCaptur
       preload: path.join(__dirname, "preload.js")
     },
   });
+<<<<<<< Updated upstream
   captureWindow.setOpacity(1);
   captureWindow.setAlwaysOnTop(true, "screen-saver");
   captureWindow.setFullScreenable(false);
   captureWindow.setVisibleOnAllWorkspaces(true);
+=======
+  console.log("@@@@create",screenWidth,screenHeight);
+  // captureWindow.setOpacity(1);
+  // captureWindow.setAlwaysOnTop(true, "screen-saver");
+  // captureWindow.setFullScreenable(false);
+  // captureWindow.setVisibleOnAllWorkspaces(true);
+>>>>>>> Stashed changes
   captureWindow.on("closed", () => { 
     captureWindow.destroy();
   })

@@ -150,7 +150,7 @@ function registerShortcut() {
       startScreenShot();
     });
     // 测试快捷键，关闭捕获窗口
-    globalShortcut.register("Ctrl+Shift+A", () => {
+    globalShortcut.register("Esc", () => {
       closeCaptureWindows();
       preloadCaptureWindows();
     });
