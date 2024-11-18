@@ -3,12 +3,39 @@
   "asar": true,
   "copyright": "Copyright © 2022 electron",
   "directories": {
-    "output": "release/${version}"
+    "output": "release/"
   },
   "productName": "screen shot",
+  "files": [
+    "./**/*",
+    "!node_modules",
+    "!src",
+    "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+    "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+    "!**/node_modules/*.d.ts",
+    "!**/node_modules/.bin",
+    "!**/*.{spec,test,docs,doc}",
+    "!**/package-lock.json",
+    "!**/node_modules/@types/**",
+    "!**/node_modules/devDependencies/**",
+    "!release",
+    "!types",
+    "!.gitignore",
+    "!tsconfig.json",
+    "!vite.config.ts",
+    "!.eslintrc.js",
+    "!tsconfig.app.json",
+    "!tsconfig.node.json",
+    "!index.html"
+
+  ],
+  "extraResources": [
+    "assets/**/*"
+  ],
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
-    "target": ["dmg"]
+    "target": ["dmg"],
+    "asar": true
   },
   "win": {
     "target": [
