@@ -1,7 +1,8 @@
-import { app, BrowserWindow, ipcMain, screen, globalShortcut, clipboard } from "electron";
+import { app, BrowserWindow, ipcMain, globalShortcut } from "electron";
 import { createCaptureWindow } from "./captureWindow/createCaptureWindow";
 import path from "path";
 import { platform } from "os";
+import screenshot from "screenshot-desktop";
 import {
   getCaptureWindowSources,
   handleSaveImageToClipboard,
@@ -15,9 +16,9 @@ import {
 const isDarwin = platform() === "darwin";
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let mainWindow: BrowserWindow | null;
-let captureWindow: BrowserWindow;
 let createCaptureWindowProps: CreateCaptureWindowProps;
-let screenDatas: ScreenData[];
+let screenData: ScreenData[];
+let screenShotData: { id: number;  name: string}[];
 let captureWindows: BrowserWindow[] = [];
 
 const createWindow = () => {
@@ -33,6 +34,7 @@ const createWindow = () => {
     },
   });
 
+  mainWindow.minimize();
   // 主窗口创建时预创建捕获窗口
   preloadCaptureWindows();
 
@@ -54,8 +56,8 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-function init() {
-  screenDatas = getAllDisplays();
+async function init() {
+  await getScreenData();
   addEventListenerOfMain();
   createWindow();
   registerShortcut();
@@ -63,6 +65,21 @@ function init() {
 
 function getCaptureWindowById(id: number): BrowserWindow | undefined {
   return captureWindows.find(captureWindow => captureWindow.id === id)
+}
+
+/**
+ * screenshot.listDisplays API 获取的屏幕Id与electorn.screen.getAllDisplays API 获取的屏幕Id不一致，需要根据屏幕名做统一
+ */
+async function getScreenData() {
+  screenData = getAllDisplays();
+  screenShotData = await screenshot.listDisplays();
+  screenShotData.forEach(data => {
+    screenData.map(screenData => {
+      if (screenData.label === data.name) {
+        screenData.id = data.id;
+      }
+    })
+  })
 }
 
 function closeCaptureWindows() {
@@ -80,23 +97,18 @@ function addEventListenerOfMain(): void {
   ipcMain.handle("screen:shot", () => {
     startScreenShot();
   });
-  ipcMain.handle("captureWindow:sources", async (event,screenId, screenWidth, screenHeight,screenScaleFactor) => {
-    return new Promise(async resolve => {
-      const captureWindowsSource = await getCaptureWindowSources( screenWidth, screenHeight, screenScaleFactor );
-      const captureWindowSource = captureWindowsSource?.find(captureWindowSource => captureWindowSource.display_id == screenId);
-      console.log("------> get captureWindow:sources success!");
-      resolve(captureWindowSource);
-    })
+  ipcMain.handle("captureWindow:sources", async (event, screenId) => {
+    return await getCaptureWindowSources(screenId);
   });
   ipcMain.handle("window:close", () => {
-    console.log("------> close allWindow success!");
     closeCaptureWindows();
     mainWindow?.close();
+    console.log("------> close allWindow success!");
   });
   ipcMain.handle("captureWindow:close", async () => {
-    console.log("------> close captureWindow success!");
     closeCaptureWindows();
     preloadCaptureWindows();
+    console.log("------> close captureWindow success!");
   });
   ipcMain.handle("saveClipboard:image", (event, ImageDataURL) => {
     console.log("------> saveClipboard:image success!");
@@ -117,7 +129,7 @@ function addEventListenerOfMain(): void {
 
 async function preloadCaptureWindows() {
   try {
-    screenDatas.forEach(async screenData => {
+    screenData.forEach(async screenData => {
       createCaptureWindowProps = {
         isDarwin,
         x: screenData.bounds.x,
@@ -131,7 +143,7 @@ async function preloadCaptureWindows() {
     })
     console.log("------> preloadCaptureWindiow is success!");
   } catch (error) {
-    
+    console.error("------> preloadCaptureWindiow is error!");
   }
 }
 
@@ -149,10 +161,9 @@ function registerShortcut() {
     globalShortcut.register("Ctrl+P", () => {
       startScreenShot();
     });
-    // 测试快捷键，关闭捕获窗口
-    globalShortcut.register("Esc", () => {
-      closeCaptureWindows();
-      preloadCaptureWindows();
-    });
   }
+  globalShortcut.register("Esc", () => {
+    closeCaptureWindows();
+    preloadCaptureWindows();
+  });
 }

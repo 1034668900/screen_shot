@@ -1,12 +1,13 @@
-import { type BrowserWindow, desktopCapturer, nativeImage, clipboard, dialog, screen } from "electron";
+import { type BrowserWindow, nativeImage, clipboard, dialog, screen } from "electron";
+import screenshot from "screenshot-desktop";
 import fs from "fs/promises";
-import { createCaptureWindow } from "./captureWindow/createCaptureWindow";
 
 type Size = { width: number; height: number };
 
 export type ScreenData = {
   id: number;
   size: Size;
+  label: string;
   bounds: { x: number; y: number } & Size;
   scaleFactor: number;
 }
@@ -17,17 +18,11 @@ function handleScreenShot(captureWindow: BrowserWindow | null) {
   captureWindow.show();
 }
 
-async function getCaptureWindowSources(screenWidth: number, screenHeight: number, scaleFactor: number) {
+async function getCaptureWindowSources(screenId: number) {
   try {
-    return await desktopCapturer.getSources({
-      types: ["screen"],
-      thumbnailSize: {
-        width: screenWidth * scaleFactor,
-        height: screenHeight * scaleFactor,
-      },
-    });
+    return await screenshot({ screen: screenId, format: "png" });
   } catch (error) {
-    console.log(error);
+    console.error("getCaptureWindowSources is error");
   }
 }
 
@@ -52,7 +47,7 @@ async function handleDownloadImage(captureWindow: BrowserWindow, ImageDataURL: s
     if (canceled) return;
     await fs.writeFile(filePath, buffer);
   } catch (error) {
-    console.log(error);
+    console.error("handleDownloadImage is error");
   }
 }
 
@@ -62,6 +57,7 @@ function getAllDisplays(): ScreenData[] {
   screens.forEach(screen => {
     let tempScreenData: ScreenData = {
       id: screen.id,
+      label: screen.label,
       size: screen.size,
       bounds: screen.bounds,
       scaleFactor: Math.ceil(screen.scaleFactor)

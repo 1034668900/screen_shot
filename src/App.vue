@@ -13,7 +13,7 @@
 import Header from "./components/Header.vue";
 
 const handleScreenShot = () => {
-  window.electronAPI.screenShot();
+  window.electronAPI.startScreenShot();
 };
 </script>
 

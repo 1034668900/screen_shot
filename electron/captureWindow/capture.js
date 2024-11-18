@@ -24,7 +24,6 @@ function initDoms(DomsName) {
   });
 
   Doms["tool-bar"].addEventListener("click", async (e) => {
-    console.log(`------> start ${e.target.id}`);
     switch (e.target.id) {
       case "operate-download":
         await captureInstance.downloadImage(captureWindowId);
@@ -51,19 +50,6 @@ function initEvent() {
 }
 
 async function startCapture() {
-<<<<<<< Updated upstream
-  const windowSource = await getCaptureSources();
-  // 窗口内容获取成功后在调整mask颜色，否则会影响原图
-  Doms["capture-mask"].style.background = "rgba(0,0,0,0.6)";
-  const imgURL = windowSource.thumbnail.toDataURL();
-  captureInstance = new captureRender(
-    Doms["capture-canvas"],
-    Doms["capture-bg"],
-    Doms["tool-bar"],
-    imgURL,
-    screenData
-  );
-=======
   const imgBuffer = await getCaptureSources();
   const imgBlob = new Blob([imgBuffer], {type:"image/png"});
   Doms["capture-mask"].style.background = "rgba(0, 0, 0, .6)";
@@ -80,7 +66,6 @@ async function startCapture() {
     );
   }
   reader.readAsDataURL(imgBlob);
->>>>>>> Stashed changes
 }
 
 async function getCaptureSources() {
