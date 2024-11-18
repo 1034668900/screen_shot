@@ -13,13 +13,11 @@ release
 package-lock.json
 node_modules
 .DS_Store
-dist
 dist-ssr
+dist-electron
 coverage
 *.local
-dist-electron
 .gitignore
-
 /cypress/videos/
 /cypress/screenshots/
 

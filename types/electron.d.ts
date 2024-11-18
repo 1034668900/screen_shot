@@ -1,7 +1,7 @@
 // 解决前端代码中使用 electronAPI 时 TS 校验问题
 declare interface Window {
   electronAPI: {
-    screenShot: () => Promise<string>;
+    startScreenShot: () => Promise<string>;
   };
 }
 
