@@ -3766,8 +3766,18 @@ async function getScreenData() {
   screenShotData = await screenshot.listDisplays();
   screenShotData.forEach((data) => {
     screenData.map((screenData2) => {
-      if (screenData2.label === data.name) {
-        screenData2.id = data.id;
+      if (isDarwin) {
+        if (screenData2.label === data.name || screenData2.label === "内建视网膜显示器") {
+          screenData2.id = data.id;
+        }
+      } else {
+        const { width, height } = screenData2.bounds;
+        if (data.width === void 0 || data.height === void 0 || data.dpiScale === void 0)
+          return;
+        if (width === data.width / data.dpiScale && height === data.height / data.dpiScale) {
+          screenData2.scaleFactor = data.dpiScale;
+          screenData2.id = data.id;
+        }
       }
     });
   });
@@ -3846,13 +3856,7 @@ function registerShortcut() {
     });
   } else {
     electron.globalShortcut.register("Ctrl+P", () => {
-<<<<<<< HEAD
-      handleScreenShot(captureWindow);
-    });
-    electron.globalShortcut.register("Ctrl+Shift+A", () => {
-=======
       startScreenShot();
->>>>>>> d826394 (fix: 修复多窗口截图问题、裁剪窗口尺寸偏差问题-mac)
     });
   }
   electron.globalShortcut.register("Esc", () => {

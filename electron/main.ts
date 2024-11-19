@@ -18,7 +18,7 @@ process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let mainWindow: BrowserWindow | null;
 let createCaptureWindowProps: CreateCaptureWindowProps;
 let screenData: ScreenData[];
-let screenShotData: { id: number;  name: string}[];
+let screenShotData: { id:  number, width?: number, height?: number, dpiScale?: number, name: string} [];
 let captureWindows: BrowserWindow[] = [];
 
 const createWindow = () => {
@@ -69,14 +69,24 @@ function getCaptureWindowById(id: number): BrowserWindow | undefined {
 
 /**
  * screenshot.listDisplays API 获取的屏幕Id与electorn.screen.getAllDisplays API 获取的屏幕Id不一致，需要根据屏幕名做统一
+ * electron.screen 模块得到的 scaleFactor是屏幕的最大缩放因子,不会随着widows用户对屏幕缩放比例的选择而改变，因此需要调整
  */
 async function getScreenData() {
   screenData = getAllDisplays();
   screenShotData = await screenshot.listDisplays();
   screenShotData.forEach(data => {
-    screenData.map(screenData => {
-      if (screenData.label === data.name) {
-        screenData.id = data.id;
+    screenData.map((screenData) => {
+      if (isDarwin) {
+        if (screenData.label === data.name || screenData.label === '内建视网膜显示器') {
+          screenData.id = data.id as number;
+        }
+      }else {
+        const { width, height } = screenData.bounds;
+        if(data.width === undefined || data.height === undefined || data.dpiScale === undefined)return;
+        if(width === data.width / data.dpiScale && height === data.height/data.dpiScale){
+          screenData.scaleFactor = data.dpiScale as number;
+          screenData.id = data.id;
+        }
       }
     })
   })
