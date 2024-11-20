@@ -47,6 +47,14 @@ function initEvent() {
     screenData = data.screenData;
     captureWindowId = data.captureWindowId;
   });
+
+  window.addEventListener("keydown", (e) => { 
+    if (!captureInstance.isCapture) return;
+    if (e.key === "Enter") {
+      captureInstance.saveImageToClipboard();
+      captureInstance.closeCaptureWindow();
+    }
+  });
 }
 
 async function startCapture() {

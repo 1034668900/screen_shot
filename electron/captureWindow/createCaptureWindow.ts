@@ -17,7 +17,7 @@ export async function createCaptureWindow(createCaptureWindowProps: CreateCaptur
     autoHideMenuBar: true,
     enableLargerThanScreen: true,//mac
     skipTaskbar: true,
-    // alwaysOnTop: true,
+    alwaysOnTop: true,
     hasShadow: false,
     webPreferences: {
       webSecurity: false,
@@ -26,10 +26,10 @@ export async function createCaptureWindow(createCaptureWindowProps: CreateCaptur
       preload: path.join(__dirname, "preload.js")
     },
   });
-  // captureWindow.setOpacity(1);
-  // captureWindow.setAlwaysOnTop(true, "screen-saver");
-  // captureWindow.setFullScreenable(false);
-  // captureWindow.setVisibleOnAllWorkspaces(true);
+  captureWindow.setOpacity(1);
+  captureWindow.setAlwaysOnTop(true, "screen-saver");
+  captureWindow.setFullScreenable(false);
+  captureWindow.setVisibleOnAllWorkspaces(true);
   captureWindow.on("closed", () => { 
     captureWindow.destroy();
   })

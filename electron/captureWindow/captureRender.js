@@ -2,6 +2,7 @@ import { operateDoms } from "./capture.js";
 
 class captureRender extends Event {
   isMouseDown = false;
+  isCapture = false;
   relativeX = 0;
   relativeY = 0;
   startX = 0;
@@ -72,6 +73,7 @@ class captureRender extends Event {
       this.startX = e.screenX;
       this.startY = e.screenY;
       this.hideToolBar();
+      this.clearCanvas();
     });
     window.addEventListener("mousemove", (e) => {
       if (operateDoms.includes(e.target.id)) {
@@ -87,10 +89,15 @@ class captureRender extends Event {
         return;
       }
       this.isMouseDown = false;
-      this.showToolBar();
+      if (this.isLegalOfRectSize()) {
+        this.showToolBar();
+      } else {
+        this.clearCanvas();
+      }
     });
   }
   drawRectangle() {
+    this.isCapture = true;
     const startX = Math.min(this.startX, this.endX) - this.relativeX;
     const startY = Math.min(this.startY, this.endY) - this.relativeY;
     const endX = Math.max(this.startX, this.endX) - this.relativeX;
@@ -99,11 +106,12 @@ class captureRender extends Event {
     this.endY = endY;
     const width = endX - startX;
     const height = endY - startY;
+    this.width = width;
+    this.height = height;
     const scaleFactor = this.scaleFactor;
     const margin = 2;
     const canvasWidth = width + 2 * margin;
     const canvasHeight = height + 2 * margin;
-
     this.shotRect = { startX, startY, width, height };
     this.$canvas.width = (width + margin * 2) * scaleFactor;
     this.$canvas.height = (height + margin * 2) * scaleFactor;
@@ -138,6 +146,15 @@ class captureRender extends Event {
   }
   hideToolBar() {
     this.$toolBar.style.display = "none";
+  }
+  clearCanvas() {
+    this.ctx.clearRect(0, 0, this.$canvas.width, this.$canvas.height);
+    this.width = 0;
+    this.height = 0;
+    this.isCapture = false;
+  }
+  isLegalOfRectSize() {
+    return (this.width > 5 && this.height > 5);
   }
   getShotRectImageURL() {
     const { startX, startY, width, height } = this.shotRect;
