@@ -41,10 +41,11 @@
         border-radius: 5px;
         user-select: none;
       }
-      .capture-tool {
+      .operate-button {
         display: flex;
         justify-content: center;
         align-items: center;
+        padding: 0.5rem;
         width: var(--tool-icon-width);
         height: var(--tool-icon-height);
         cursor: pointer;
@@ -56,9 +57,9 @@
     <div id="capture-mask"></div>
     <canvas id="capture-canvas"></canvas>
     <div id="tool-bar">
-      <div class="capture-tool" id="operate-download">下载</div>
-      <div class="capture-tool" id="operate-cancel">取消</div>
-      <div class="capture-tool" id="operate-save">保存</div>
+      <img id="operate-cancel" class="operate-button" src="../assets/close.svg" alt="取消">
+      <img id="operate-download" class="operate-button" src="../assets/download.svg" alt="下载">
+      <img id="operate-save" class="operate-button" src="../assets/select.svg" alt="选择">
     </div>
     <script type="module" src="./capture.js"></script>
   </body>

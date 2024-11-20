@@ -1,4 +1,5 @@
 import { operateDoms } from "./capture.js";
+
 class captureRender extends Event {
   isMouseDown = false;
   relativeX = 0;
@@ -17,9 +18,9 @@ class captureRender extends Event {
     screenData
   ) {
     super([arguments]);
-    const { bounds, scaleFactor, size  } = screenData;
+    const { bounds, scaleFactor, size } = screenData;
     this.$canvas = $canvas;
-    this.ctx = $canvas.getContext("2d", {willReadFrequently : true});
+    this.ctx = $canvas.getContext("2d", { willReadFrequently : true});
     this.$bg = $bg;
     this.$toolBar = $toolBar;
     this.toolBarWidth = parseInt(getComputedStyle(this.$toolBar).width);
@@ -34,8 +35,8 @@ class captureRender extends Event {
   async init() {
     this.$bg.style.backgroundImage = `url(${this.imgDataURL})`;
     this.$bg.style.backgroundSize = `${this.width}px,${this.height}px`;
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d", {willReadFrequently: true});
+    let canvas = document.createElement("canvas");
+    let ctx = canvas.getContext("2d", { willReadFrequently: true});
     const img = await this.onloadImage(this.imgDataURL);
     canvas.width = this.width * this.scaleFactor;
     canvas.height = this.height * this.scaleFactor;

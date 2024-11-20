@@ -25,7 +25,7 @@ async function createCaptureWindow(createCaptureWindowProps2) {
     enableLargerThanScreen: true,
     //mac
     skipTaskbar: true,
-    alwaysOnTop: true,
+    // alwaysOnTop: true,
     hasShadow: false,
     webPreferences: {
       webSecurity: false,
@@ -34,10 +34,6 @@ async function createCaptureWindow(createCaptureWindowProps2) {
       preload: require$$1.join(__dirname, "preload.js")
     }
   });
-  captureWindow.setOpacity(1);
-  captureWindow.setAlwaysOnTop(true, "screen-saver");
-  captureWindow.setFullScreenable(false);
-  captureWindow.setVisibleOnAllWorkspaces(true);
   captureWindow.on("closed", () => {
     captureWindow.destroy();
   });
