@@ -1,4 +1,4 @@
-// 解决前端代码中使用 electronAPI 时 TS 校验问题
+// 解决Vue代码中使用 electronAPI 时 TS 校验问题
 declare interface Window {
   electronAPI: {
     startScreenShot: () => Promise<string>;

@@ -136,11 +136,10 @@ function addEventListenerOfMain(): void {
       console.error("download:image is error");
     }
   });
-  ipcMain.on("captureWindowShow:ready", (event, id) => {
+  ipcMain.on("captureWindowShow:ready", () => {
     countOfCaptureWindowToShot++;
     if (countOfCaptureWindowToShot === captureWindows.length) {
       captureWindows.forEach(captureWindow => {
-        console.log("@@@ca",captureWindow);   
         captureWindow.webContents.send("captureWindow:show");
       });
     }

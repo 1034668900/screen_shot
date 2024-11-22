@@ -24,7 +24,7 @@
     "@types/screenshot-desktop": "^1.12.3",
     "@vitejs/plugin-vue": "^4.3.4",
     "@vue/tsconfig": "^0.4.0",
-    "electron": "^32.1.2",
+    "electron": "23.3.13",
     "electron-builder": "^25.0.5",
     "npm-run-all2": "^6.0.6",
     "sass": "^1.79.4",

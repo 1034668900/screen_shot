@@ -9,6 +9,10 @@ class captureRender extends Event {
   startY = 0;
   endX = 0;
   endY = 0;
+  canvasWidth = 0;
+  canvasHeight = 0;
+  screenWidth = 0;
+  screenHeight = 0;
   shotRect = {};
 
   constructor(
@@ -26,8 +30,10 @@ class captureRender extends Event {
     this.$toolBar = $toolBar;
     this.toolBarWidth = parseInt(getComputedStyle(this.$toolBar).width);
     this.imgDataURL = imgDataURL;
-    this.width = size.width;
-    this.height = size.height;
+    this.canvasWidth = size.width;
+    this.canvasHeight = size.height;
+    this.screenWidth = size.width;
+    this.screenHeight = size.height;
     this.relativeX = bounds.x;
     this.relativeY = bounds.y;
     this.scaleFactor = scaleFactor;
@@ -35,12 +41,12 @@ class captureRender extends Event {
   }
   async init() {
     this.$bg.style.backgroundImage = `url(${this.imgDataURL})`;
-    this.$bg.style.backgroundSize = `${this.width}px,${this.height}px`;
+    this.$bg.style.backgroundSize = `${this.canvasWidth}px,${this.canvasHeight}px`;
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d", { willReadFrequently: true});
     const img = await this.onloadImage(this.imgDataURL);
-    canvas.width = this.width * this.scaleFactor;
-    canvas.height = this.height * this.scaleFactor;
+    canvas.width = this.canvasWidth * this.scaleFactor;
+    canvas.height = this.canvasHeight * this.scaleFactor;
     ctx.drawImage(img, 0, 0);
     // 存储原始背景，为后续截取作准备
     this.$originBackground = ctx;
@@ -66,8 +72,6 @@ class captureRender extends Event {
   }
   addListenerForWindow() {
     window.addEventListener("mousedown", (e) => {
-      console.log("@@@click");
-
       if (operateDoms.includes(e.target.id)) {
         return;
       }
@@ -100,20 +104,23 @@ class captureRender extends Event {
   }
   drawRectangle() {
     this.isCapture = true;
+
     const startX = Math.min(this.startX, this.endX) - this.relativeX;
     const startY = Math.min(this.startY, this.endY) - this.relativeY;
     const endX = Math.max(this.startX, this.endX) - this.relativeX;
     const endY = Math.max(this.startY, this.endY) - this.relativeY;
     this.endX = endX;
     this.endY = endY;
-    const width = endX - startX;
-    const height = endY - startY;
-    this.width = width;
-    this.height = height;
+    const width = endX - startX <= this.screenWidth ? endX - startX : this.screenWidth;
+    const height = endY - startY <= this.screenHeight ? endY - startY : this.screenHeight;
+    this.canvasWidth = width;
+    this.canvasHeight = height;
+
     const scaleFactor = this.scaleFactor;
     const margin = 2;
     const canvasWidth = width + 2 * margin;
     const canvasHeight = height + 2 * margin;
+
     this.shotRect = { startX, startY, width, height };
     this.$canvas.width = (width + margin * 2) * scaleFactor;
     this.$canvas.height = (height + margin * 2) * scaleFactor;
@@ -136,6 +143,7 @@ class captureRender extends Event {
         margin * scaleFactor
       );
     }
+    // 绘制截图窗口边框
     this.ctx.fillStyle = "#FFFFFF";
     this.ctx.strokeStyle = "#67BADE";
     this.ctx.lineWidth = margin * scaleFactor;
@@ -151,12 +159,12 @@ class captureRender extends Event {
   }
   clearCanvas() {
     this.ctx.clearRect(0, 0, this.$canvas.width, this.$canvas.height);
-    this.width = 0;
-    this.height = 0;
+    this.canvasWidth = 0;
+    this.canvasHeight = 0;
     this.isCapture = false;
   }
   isLegalOfRectSize() {
-    return (this.width > 5 && this.height > 5);
+    return (this.canvasWidth > 5 && this.canvasHeight > 5);
   }
   getShotRectImageURL() {
     const { startX, startY, width, height } = this.shotRect;
