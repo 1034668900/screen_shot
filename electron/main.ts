@@ -136,6 +136,13 @@ function addEventListenerOfMain(): void {
       console.error("download:image is error");
     }
   });
+  ipcMain.handle("clearOtherCanvas", (event, id) => {
+    captureWindows.forEach(captureWindow => {
+      if (captureWindow.id !== id) {
+        captureWindow.webContents.send("clear:canvas");
+      }
+    })
+  })
   ipcMain.on("captureWindowShow:ready", () => {
     countOfCaptureWindowToShot++;
     if (countOfCaptureWindowToShot === captureWindows.length) {

@@ -38,12 +38,14 @@ function initDoms(DomsName) {
         await captureInstance.closeCaptureWindow();
         break;
     }
+    removeMouseOverListener();
   });
 }
 
 function initEvent() {
   window.electronAPI.onStartCapture(startCapture);
   window.electronAPI.onStartShow(handleStartShow);
+  window.electronAPI.onClearCanvas(handleClearCanvas)
   window.electronAPI.transportScreenAndWindowData((args) => {
     const data = JSON.parse(args);
     screenData = data.screenData;
@@ -58,17 +60,18 @@ function initEvent() {
     }
   });
 
-  // 确保鼠标移出当前屏幕后清除canvas画布
-  document.body.addEventListener('mouseleave', () => {
-    if (!captureInstance?.isCapture) return;
-    captureInstance.clearCanvas();
-    captureInstance.hideToolBar();
-  })
+
 }
 
 async function startCapture() {
   imgBuffer = await getCaptureSources();
   readyToShow();
+}
+
+function handleClearCanvas() {
+  if (!captureInstance.isCapture) return;
+  captureInstance.clearCanvas();
+  captureInstance.hideToolBar();
 }
 
 function handleStartShow() {
@@ -84,6 +87,21 @@ function handleStartShow() {
       screenData
     );
   };
+  addMouseOverListener();
+}
+
+function addMouseOverListener() {
+  document.body.addEventListener('mouseover', clearOtherCanvas)
+}
+
+function removeMouseOverListener() {
+  document.body.removeEventListener('mouseover', clearOtherCanvas)
+}
+
+
+function clearOtherCanvas() {
+  if(!captureInstance?.isCapture)return
+  window.electronAPI.clearOtherCanvas(captureWindowId);
 }
 
 async function getCaptureSources() {

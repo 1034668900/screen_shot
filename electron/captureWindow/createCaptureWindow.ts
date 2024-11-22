@@ -15,7 +15,6 @@ export async function createCaptureWindow(createCaptureWindowProps: CreateCaptur
     resizable: false,
     movable: false,
     show: false,
-    focusable:false,
     autoHideMenuBar: true,
     enableLargerThanScreen: true,//mac
     skipTaskbar: true,

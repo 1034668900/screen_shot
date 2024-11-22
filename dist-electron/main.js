@@ -22,7 +22,6 @@ async function createCaptureWindow(createCaptureWindowProps2) {
     resizable: false,
     movable: false,
     show: false,
-    focusable: false,
     autoHideMenuBar: true,
     enableLargerThanScreen: true,
     //mac
@@ -3825,6 +3824,13 @@ function addEventListenerOfMain() {
     } catch (error) {
       console.error("download:image is error");
     }
+  });
+  electron.ipcMain.handle("clearOtherCanvas", (event, id) => {
+    captureWindows.forEach((captureWindow) => {
+      if (captureWindow.id !== id) {
+        captureWindow.webContents.send("clear:canvas");
+      }
+    });
   });
   electron.ipcMain.on("captureWindowShow:ready", () => {
     countOfCaptureWindowToShot++;

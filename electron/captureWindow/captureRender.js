@@ -109,6 +109,7 @@ class captureRender extends Event {
     const tempEndY = Math.max(this.startY, this.endY) - this.relativeY;
     const endX = tempEndX > this.screenWidth ? this.screenWidth : tempEndX;
     const endY = tempEndY > this.screenHeight ? this.screenHeight : tempEndY;
+    
     const width = endX - startX;
     const height = endY - startY;
 
