@@ -35,7 +35,7 @@ const createWindow = () => {
     },
   });
 
-  mainWindow.minimize();
+  mainWindow.hide();
   // 主窗口创建时预创建捕获窗口
   preloadCaptureWindows();
 

@@ -72,9 +72,7 @@ class captureRender extends Event {
   }
   addListenerForCapture() {
     window.addEventListener("mousedown", (e) => {
-      if (operateDoms.includes(e.target.id)) {
-        return;
-      }
+      if (operateDoms.includes(e.target.id))return; // 鼠标点击在操作按钮上不触发以下逻辑
       this.isMouseDown = true;
       this.startX = e.screenX;
       this.startY = e.screenY;
@@ -82,9 +80,6 @@ class captureRender extends Event {
       this.clearCanvas();
     });
     window.addEventListener("mousemove", (e) => {
-      if (operateDoms.includes(e.target.id)) {
-        return;
-      }
       if (!this.isMouseDown) return;
       this.endX = e.screenX;
       this.endY = e.screenY;
@@ -105,19 +100,26 @@ class captureRender extends Event {
   drawRectangle() {
     this.isCapture = true;
 
-    const startX = Math.min(this.startX, this.endX) - this.relativeX;
-    const startY = Math.min(this.startY, this.endY) - this.relativeY;
-    const endX = Math.max(this.startX, this.endX) - this.relativeX;
-    const endY = Math.max(this.startY, this.endY) - this.relativeY;
+    const tempStartX = Math.min(this.startX, this.endX) - this.relativeX;
+    const tempStartY = Math.min(this.startY, this.endY) - this.relativeY;
+    const startX = tempStartX <= 0 ? 0 : tempStartX;
+    const startY = tempStartY <= 0 ? 0 : tempStartY;
+
+    const tempEndX = Math.max(this.startX, this.endX) - this.relativeX;
+    const tempEndY = Math.max(this.startY, this.endY) - this.relativeY;
+    const endX = tempEndX > this.screenWidth ? this.screenWidth : tempEndX;
+    const endY = tempEndY > this.screenHeight ? this.screenHeight : tempEndY;
+    const width = endX - startX;
+    const height = endY - startY;
+
+    // 同步结束位置数据是为了定位工具栏
     this.endX = endX;
     this.endY = endY;
-    const width = endX - startX <= this.screenWidth ? endX - startX : this.screenWidth;
-    const height = endY - startY <= this.screenHeight ? endY - startY : this.screenHeight;
     this.canvasWidth = width;
     this.canvasHeight = height;
 
+    const margin = 2;// 捕获窗口的边框
     const scaleFactor = this.scaleFactor;
-    const margin = 2;
     const canvasWidth = width + 2 * margin;
     const canvasHeight = height + 2 * margin;
 

@@ -21,6 +21,8 @@ async function createCaptureWindow(createCaptureWindowProps2) {
     transparent: true,
     resizable: false,
     movable: false,
+    show: false,
+    focusable: false,
     autoHideMenuBar: true,
     enableLargerThanScreen: true,
     //mac
@@ -41,7 +43,6 @@ async function createCaptureWindow(createCaptureWindowProps2) {
   captureWindow.on("closed", () => {
     captureWindow.destroy();
   });
-  captureWindow.hide();
   await captureWindow.loadFile(
     require$$1.join(__dirname, "../electron/captureWindow/capture.html")
   );
@@ -3734,7 +3735,7 @@ const createWindow = () => {
       preload: require$$1.join(__dirname, "../dist-electron/preload.js")
     }
   });
-  mainWindow.minimize();
+  mainWindow.hide();
   preloadCaptureWindows();
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);

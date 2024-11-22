@@ -58,8 +58,8 @@ function initEvent() {
     }
   });
 
+  // 确保鼠标移出当前屏幕后清除canvas画布
   document.body.addEventListener('mouseleave', () => {
-    console.log("@@@@mouseleave");
     if (!captureInstance?.isCapture) return;
     captureInstance.clearCanvas();
     captureInstance.hideToolBar();

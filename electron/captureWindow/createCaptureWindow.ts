@@ -14,6 +14,8 @@ export async function createCaptureWindow(createCaptureWindowProps: CreateCaptur
     transparent: true,
     resizable: false,
     movable: false,
+    show: false,
+    focusable:false,
     autoHideMenuBar: true,
     enableLargerThanScreen: true,//mac
     skipTaskbar: true,
@@ -33,7 +35,6 @@ export async function createCaptureWindow(createCaptureWindowProps: CreateCaptur
   captureWindow.on("closed", () => { 
     captureWindow.destroy();
   })
-  captureWindow.hide();
   await captureWindow.loadFile(
     path.join(__dirname, "../electron/captureWindow/capture.html")
   );

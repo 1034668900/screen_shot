@@ -1,6 +1,7 @@
 import { type BrowserWindow, nativeImage, clipboard, dialog, screen } from "electron";
 import screenshot from "screenshot-desktop";
 import fs from "fs/promises";
+import type { PathLike } from "fs";
 
 type Size = { width: number; height: number };
 
@@ -45,7 +46,7 @@ async function handleDownloadImage(captureWindow: BrowserWindow, ImageDataURL: s
       defaultPath: `FengCh-${Date.now()}.${ext}`,
     });
     if (canceled) return;
-    await fs.writeFile(filePath, buffer);
+    await fs.writeFile(filePath as PathLike, buffer);
   } catch (error) {
     console.error("handleDownloadImage is error");
   }
