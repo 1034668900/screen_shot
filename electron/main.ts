@@ -20,6 +20,7 @@ let createCaptureWindowProps: CreateCaptureWindowProps;
 let screenData: ScreenData[];
 let screenShotData: { id:  number, width?: number, height?: number, dpiScale?: number, name: string} [];
 let captureWindows: BrowserWindow[] = [];
+let countOfCaptureWindowToShot: number = 0;
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
@@ -135,6 +136,15 @@ function addEventListenerOfMain(): void {
       console.error("download:image is error");
     }
   });
+  ipcMain.on("captureWindowShow:ready", (event, id) => {
+    countOfCaptureWindowToShot++;
+    if (countOfCaptureWindowToShot === captureWindows.length) {
+      captureWindows.forEach(captureWindow => {
+        console.log("@@@ca",captureWindow);   
+        captureWindow.webContents.send("captureWindow:show");
+      });
+    }
+  })
 }
 
 async function preloadCaptureWindows() {
@@ -150,6 +160,7 @@ async function preloadCaptureWindows() {
       const captureWindow = await createCaptureWindow(createCaptureWindowProps);
       captureWindow.webContents.send("transport-screen-and-window-data", JSON.stringify({screenData,captureWindowId: captureWindow.id}));
       captureWindows.push(captureWindow);
+      countOfCaptureWindowToShot = 0;
     })
     console.log("------> preloadCaptureWindiow is success!");
   } catch (error) {
@@ -161,6 +172,7 @@ function registerShortcut() {
   if (platform() === "darwin") {
     console.log("------> registerShotcut success!");
     globalShortcut.register("Command+P", () => {
+      if (countOfCaptureWindowToShot === captureWindows.length) return;
       startScreenShot();
     });
     globalShortcut.register("Command+Shift+P", () => {

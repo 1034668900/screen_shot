@@ -10,7 +10,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   transportScreenAndWindowData: (getData) => ipcRenderer.on("transport-screen-and-window-data", (event, data) => {
     getData(data);
   }),
+  readyToShow: () => ipcRenderer.send("captureWindowShow:ready"),
   onStartCapture: (startCapture) => ipcRenderer.on("start-capture", () => {
     startCapture();
+  }),
+  onStartShow: (cb) => ipcRenderer.on("captureWindow:show", () => {
+    console.log("@@@preloadOnStartShow");
+    cb();
   })
 });

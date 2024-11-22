@@ -3717,6 +3717,7 @@ let createCaptureWindowProps;
 let screenData;
 let screenShotData;
 let captureWindows = [];
+let countOfCaptureWindowToShot = 0;
 const createWindow = () => {
   mainWindow = new electron.BrowserWindow({
     frame: false,
@@ -3820,6 +3821,15 @@ function addEventListenerOfMain() {
       console.error("download:image is error");
     }
   });
+  electron.ipcMain.on("captureWindowShow:ready", (event, id) => {
+    countOfCaptureWindowToShot++;
+    if (countOfCaptureWindowToShot === captureWindows.length) {
+      captureWindows.forEach((captureWindow) => {
+        console.log("@@@ca", captureWindow);
+        captureWindow.webContents.send("captureWindow:show");
+      });
+    }
+  });
 }
 async function preloadCaptureWindows() {
   try {
@@ -3834,6 +3844,7 @@ async function preloadCaptureWindows() {
       const captureWindow = await createCaptureWindow(createCaptureWindowProps);
       captureWindow.webContents.send("transport-screen-and-window-data", JSON.stringify({ screenData: screenData2, captureWindowId: captureWindow.id }));
       captureWindows.push(captureWindow);
+      countOfCaptureWindowToShot = 0;
     });
     console.log("------> preloadCaptureWindiow is success!");
   } catch (error) {
@@ -3844,6 +3855,8 @@ function registerShortcut() {
   if (require$$3$1.platform() === "darwin") {
     console.log("------> registerShotcut success!");
     electron.globalShortcut.register("Command+P", () => {
+      if (countOfCaptureWindowToShot === captureWindows.length)
+        return;
       startScreenShot();
     });
     electron.globalShortcut.register("Command+Shift+P", () => {

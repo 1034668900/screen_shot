@@ -66,6 +66,8 @@ class captureRender extends Event {
   }
   addListenerForWindow() {
     window.addEventListener("mousedown", (e) => {
+      console.log("@@@click");
+
       if (operateDoms.includes(e.target.id)) {
         return;
       }
