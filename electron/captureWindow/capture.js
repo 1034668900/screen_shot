@@ -8,6 +8,7 @@ const DomsName = [
   'operate-download',
   'operate-cancel',
   'operate-save',
+  'mask-describe'
 ];
 
 const Doms = {};
@@ -76,6 +77,7 @@ function handleClearCanvas() {
 
 function handleStartShow() {
   Doms['capture-mask'].style.background = 'rgba(0, 0, 0, .6)';
+  Doms['mask-describe'].style.display = 'flex';
   const imgBlob = new Blob([imgBuffer], { type: 'image/png' });
   reader.readAsDataURL(imgBlob);
   reader.onloadend = () => {

@@ -28,8 +28,24 @@
         z-index: -1;
       }
       #capture-mask {
+        position: relative;
         width: 100vw;
         height: 100vh;
+      }
+      #mask-describe {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        bottom: 1rem;
+        left: 2rem;
+        width: 35rem;
+        height: 10rem;
+        color: rgba(255, 0, 0,.8);
+        font-size: 0.875rem;
+        user-select: none;
+      }
+      #mask-describe > span {
+        margin: 0.25rem 0;
       }
       #tool-bar {
         position: absolute;
@@ -54,7 +70,12 @@
   </head>
   <body>
     <div id="capture-bg"></div>
-    <div id="capture-mask"></div>
+    <div id="capture-mask">
+      <div id="mask-describe">
+        <span>1. 单击 ESC 键退出</span>
+        <span>2. 捕获模式下单击 Enter 键保存图像至剪切板并退出</span>
+      </div>
+    </div>
     <canvas id="capture-canvas"></canvas>
     <div id="tool-bar">
       <img id="operate-cancel" class="operate-button" src="../assets/close.svg" alt="取消">
