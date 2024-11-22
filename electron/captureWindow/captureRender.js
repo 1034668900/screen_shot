@@ -50,7 +50,7 @@ class captureRender extends Event {
     ctx.drawImage(img, 0, 0);
     // 存储原始背景，为后续截取作准备
     this.$originBackground = ctx;
-    this.addListenerForWindow();
+    this.addListenerForCapture();
     ctx = null;
     canvas = null;
   }
@@ -70,7 +70,7 @@ class captureRender extends Event {
       img.onload = () => resolve(img);
     });
   }
-  addListenerForWindow() {
+  addListenerForCapture() {
     window.addEventListener("mousedown", (e) => {
       if (operateDoms.includes(e.target.id)) {
         return;

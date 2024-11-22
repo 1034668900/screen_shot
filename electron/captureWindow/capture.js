@@ -57,6 +57,13 @@ function initEvent() {
       captureInstance.closeCaptureWindow();
     }
   });
+
+  document.body.addEventListener('mouseleave', () => {
+    console.log("@@@@mouseleave");
+    if (!captureInstance?.isCapture) return;
+    captureInstance.clearCanvas();
+    captureInstance.hideToolBar();
+  })
 }
 
 async function startCapture() {
