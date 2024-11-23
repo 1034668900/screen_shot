@@ -143,8 +143,9 @@ function addEventListenerOfMain(): void {
       const captureWindow = getCaptureWindowById(id);
       if (!captureWindow) return;
       await handleDownloadImage(captureWindow, ImageDataURL);
-      console.log("------> download:image success!");
+      closeCaptureWindows();
       preloadCaptureWindows();
+      console.log("------> download:image success!");
     } catch (error) {
       console.error("download:image is error");
     }
