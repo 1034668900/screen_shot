@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut } from "electron";
+import { app, BrowserWindow, ipcMain, globalShortcut, screen } from "electron";
 import { createCaptureWindow } from "./captureWindow/createCaptureWindow";
 import path from "path";
 import { platform } from "os";
@@ -51,11 +51,19 @@ app.whenReady().then(() => {
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+  screen.on("display-metrics-changed",async () => {
+    // 屏幕尺寸缩放后重新初始化屏幕数据和预创建的截图窗口
+    await getScreenData();
+    captureWindows = [];
+    preloadCaptureWindows();
+  })
 });
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+
+
 
 async function init() {
   await getScreenData();
@@ -84,8 +92,13 @@ async function getScreenData() {
       }else {
         const { width, height } = screenData.bounds;
         if(data.width === undefined || data.height === undefined || data.dpiScale === undefined)return;
+        // 分别采取两种不同的计算匹配
         if(width === data.width / data.dpiScale && height === data.height/data.dpiScale){
           screenData.scaleFactor = data.dpiScale as number;
+          screenData.id = data.id;
+        }else if(Math.floor(width * screenData.scaleFactor) === data.width && Math.floor(height * screenData.scaleFactor) === data.height){
+          screenData.id = data.id;
+        }else if(Math.ceil(width * screenData.scaleFactor) === data.width && Math.ceil(height * screenData.scaleFactor) === data.height){
           screenData.id = data.id;
         }
       }

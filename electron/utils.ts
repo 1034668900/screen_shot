@@ -61,7 +61,7 @@ function getAllDisplays(): ScreenData[] {
       label: screen.label,
       size: screen.size,
       bounds: screen.bounds,
-      scaleFactor: Math.ceil(screen.scaleFactor)
+      scaleFactor: screen.scaleFactor
     }
     screenDatas.push(tempScreenData);
   })

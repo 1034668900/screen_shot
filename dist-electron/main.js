@@ -3708,7 +3708,7 @@ function getAllDisplays() {
       label: screen2.label,
       size: screen2.size,
       bounds: screen2.bounds,
-      scaleFactor: Math.ceil(screen2.scaleFactor)
+      scaleFactor: screen2.scaleFactor
     };
     screenDatas.push(tempScreenData);
   });
@@ -3748,6 +3748,11 @@ electron.app.whenReady().then(() => {
     if (electron.BrowserWindow.getAllWindows().length === 0)
       createWindow();
   });
+  electron.screen.on("display-metrics-changed", async () => {
+    await getScreenData();
+    captureWindows = [];
+    preloadCaptureWindows();
+  });
 });
 electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin")
@@ -3777,6 +3782,10 @@ async function getScreenData() {
           return;
         if (width === data.width / data.dpiScale && height === data.height / data.dpiScale) {
           screenData2.scaleFactor = data.dpiScale;
+          screenData2.id = data.id;
+        } else if (Math.floor(width * screenData2.scaleFactor) === data.width && Math.floor(height * screenData2.scaleFactor) === data.height) {
+          screenData2.id = data.id;
+        } else if (Math.ceil(width * screenData2.scaleFactor) === data.width && Math.ceil(height * screenData2.scaleFactor) === data.height) {
           screenData2.id = data.id;
         }
       }
