@@ -16,7 +16,8 @@ export type ScreenData = {
 function handleScreenShot(captureWindow: BrowserWindow | null) {
   if (!captureWindow) return;
   captureWindow.webContents.send("start-capture");
-  captureWindow.show();
+  captureWindow.setOpacity(1);
+  captureWindow.setIgnoreMouseEvents(false);
 }
 
 async function getCaptureWindowSources(screenId: number) {

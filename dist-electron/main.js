@@ -21,12 +21,11 @@ async function createCaptureWindow(createCaptureWindowProps2) {
     transparent: true,
     resizable: false,
     movable: false,
-    show: false,
     autoHideMenuBar: true,
     enableLargerThanScreen: true,
     //mac
     skipTaskbar: true,
-    // alwaysOnTop: true,
+    alwaysOnTop: true,
     hasShadow: false,
     webPreferences: {
       webSecurity: false,
@@ -34,6 +33,12 @@ async function createCaptureWindow(createCaptureWindowProps2) {
       contextIsolation: true,
       preload: require$$1.join(__dirname, "preload.js")
     }
+  });
+  captureWindow.setOpacity(0);
+  captureWindow.setIgnoreMouseEvents(true);
+  captureWindow.setAlwaysOnTop(true, "screen-saver", 2);
+  captureWindow.setVisibleOnAllWorkspaces(true, {
+    visibleOnFullScreen: true
   });
   captureWindow.on("closed", () => {
     captureWindow.destroy();
@@ -3661,7 +3666,8 @@ function handleScreenShot(captureWindow) {
   if (!captureWindow)
     return;
   captureWindow.webContents.send("start-capture");
-  captureWindow.show();
+  captureWindow.setOpacity(1);
+  captureWindow.setIgnoreMouseEvents(false);
 }
 async function getCaptureWindowSources(screenId) {
   try {
@@ -3792,7 +3798,8 @@ function closeCaptureWindows() {
   captureWindows.forEach((captureWindow) => captureWindow.close());
   captureWindows = [];
 }
-function startScreenShot() {
+async function startScreenShot() {
+  await getScreenData();
   captureWindows.forEach((captureWindow) => {
     handleScreenShot(captureWindow);
   });

@@ -111,7 +111,8 @@ function closeCaptureWindows() {
   captureWindows = [];
 }
 
-function startScreenShot() {
+async function startScreenShot() {
+  await getScreenData();
   captureWindows.forEach(captureWindow => {
     handleScreenShot(captureWindow);
   })
