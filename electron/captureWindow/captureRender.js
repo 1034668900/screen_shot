@@ -48,7 +48,6 @@ class captureRender extends Event {
     this.screenEndY = this.relativeY + this.screenHeight;
     this.scaleFactor = scaleFactor;
     this.init();
-    this.addListenerForCanvas();
   }
   async init() {
     this.$bg.style.backgroundImage = `url(${this.imgDataURL})`;
@@ -62,6 +61,7 @@ class captureRender extends Event {
     // 存储原始背景，为后续截取作准备
     this.$originBackground = ctx;
     this.addListenerForCapture();
+    this.addListenerForCanvasDrag();
     ctx = null;
     canvas = null;
   }
@@ -114,7 +114,7 @@ class captureRender extends Event {
       }
     });
   }
-  addListenerForCanvas() {
+  addListenerForCanvasDrag() {
     this.$canvas.addEventListener("mousedown", (e) => {
       if (!this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
       const { startX, startY } = this.shotRect;
@@ -125,23 +125,24 @@ class captureRender extends Event {
       this.dragDiffHeight = this.dragPointY - startY;
       this.hideToolBar();
     });
-    
+
     this.$canvas.addEventListener("mousemove", (e) => {
-      if (!this.judgePoinstIsInCanvas(e.screenX, e.screenY) || !this.isDrag) return;
+      if (!this.isDrag) return;
+      if (!this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
       this.dragPointX = e.screenX;
       this.dragPointY = e.screenY;
 
-      const tempStartX = this.dragPointX - this.dragDiffWidth;
-      const tempStartY = this.dragPointY - this.dragDiffHeight;
+      const tempStartX = this.dragPointX - this.dragDiffWidth + this.relativeX;
+      const tempStartY = this.dragPointY - this.dragDiffHeight + this.relativeY;
       this.startX = tempStartX <= this.relativeX ? this.relativeX : tempStartX;
       this.startY = tempStartY <= this.relativeY ? this.relativeY : tempStartY;
 
-      const tempEndX = this.canvasWidth - this.dragDiffWidth + this.dragPointX;
-      const tempEndY = this.canvasHeight - this.dragDiffHeight + this.dragPointY;
+      const tempEndX = this.canvasWidth - this.dragDiffWidth + this.dragPointX + this.relativeX;
+      const tempEndY = this.canvasHeight - this.dragDiffHeight + this.dragPointY + this.relativeY;
       this.endX = tempEndX >=this.screenEndX ?this.screenEndX : tempEndX;
       this.endY = tempEndY >= this.screenEndY ? this.screenEndY : tempEndY;
 
-      if (this.startX <= this.relativeX || this.startY <= this.relativeY || this.endX >=this.screenEndX || this.endY >= this.screenEndY) return;
+      if (this.startX <= this.relativeX || this.startY <= this.relativeY || this.endX >= this.screenEndX || this.endY >= this.screenEndY) return;
       this.drawRectangle();
     });
 
@@ -249,7 +250,9 @@ class captureRender extends Event {
   }
   judgePoinstIsInCanvas(x, y) {
     const { startX, startY, width, height } = this.shotRect;
-    return (x >= startX && x <= startX + width && y >= startY && y <= startY + height);
+    const left = x - this.relativeX;
+    const top = y - this.relativeY;
+    return (left >= startX && left <= startX + width && top >= startY && top <= startY + height);
   }
 }
 
