@@ -44,10 +44,10 @@ function initDoms(DomsName) {
 }
 
 function initEvent() {
-  window.electronAPI.onStartCapture(startCapture);
-  window.electronAPI.onStartShow(handleStartShow);
-  window.electronAPI.onClearCanvas(handleClearCanvas)
-  window.electronAPI.transportScreenAndWindowData((args) => {
+  electronAPI.onStartCapture(startCapture);
+  electronAPI.onStartShow(handleStartShow);
+  electronAPI.onClearCanvas(handleClearCanvas)
+  electronAPI.transportScreenAndWindowData((args) => {
     const data = JSON.parse(args);
     screenData = data.screenData;
     captureWindowId = data.captureWindowId;
@@ -103,11 +103,11 @@ function removeMouseOverListener() {
 
 function clearOtherCanvas() {
   if(!captureInstance?.isCapture)return
-  window.electronAPI.clearOtherCanvas(captureWindowId);
+  electronAPI.clearOtherCanvas(captureWindowId);
 }
 
 async function getCaptureSources() {
-  return await window.electronAPI.getCaptureWindowSources(
+  return await electronAPI.getCaptureWindowSources(
     screenData.id,
     screenData.size.width,
     screenData.size.height,
@@ -116,7 +116,7 @@ async function getCaptureSources() {
 }
 
 async function readyToShow() {
-  await window.electronAPI.readyToShow();
+  await electronAPI.readyToShow();
 }
 
 export const operateDoms = [
