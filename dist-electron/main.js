@@ -9,15 +9,14 @@ const require$$5 = require("assert");
 const require$$3 = require("events");
 require("util");
 const fs = require("fs/promises");
-async function createCaptureWindow(createCaptureWindowProps2) {
-  const { x, y, screenWidth, screenHeight, isDarwin: isDarwin2 } = createCaptureWindowProps2;
+async function createCaptureWindow(isDarwin2) {
   let captureWindow = new electron.BrowserWindow({
     frame: false,
     fullscreen: !isDarwin2,
-    width: screenWidth,
-    height: screenHeight,
-    x,
-    y,
+    width: 0,
+    height: 0,
+    x: 0,
+    y: 0,
     transparent: true,
     resizable: false,
     movable: false,
@@ -36,7 +35,7 @@ async function createCaptureWindow(createCaptureWindowProps2) {
   });
   captureWindow.setOpacity(0);
   captureWindow.setIgnoreMouseEvents(true);
-  captureWindow.setAlwaysOnTop(true, "screen-saver", 2);
+  captureWindow.setAlwaysOnTop(true, "screen-saver", 999);
   captureWindow.setVisibleOnAllWorkspaces(true, {
     visibleOnFullScreen: true
   });
@@ -3662,11 +3661,12 @@ if (process.platform === "linux") {
 }
 var screenshotDesktopExports = screenshotDesktop.exports;
 const screenshot = /* @__PURE__ */ getDefaultExportFromCjs(screenshotDesktopExports);
-function handleScreenShot(captureWindow) {
-  if (!captureWindow)
+function handleScreenShot(captureWindow, bounds) {
+  if (!captureWindow || !bounds)
     return;
   captureWindow.webContents.send("start-capture");
   captureWindow.setOpacity(1);
+  captureWindow.setBounds(bounds);
   captureWindow.setIgnoreMouseEvents(false);
 }
 async function getCaptureWindowSources(screenId) {
@@ -3719,7 +3719,6 @@ function getAllDisplays() {
 const isDarwin = require$$3$1.platform() === "darwin";
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let mainWindow;
-let createCaptureWindowProps;
 let screenData;
 let screenShotData;
 let captureWindows = [];
@@ -3751,7 +3750,6 @@ electron.app.whenReady().then(() => {
       createWindow();
   });
   electron.screen.on("display-metrics-changed", async () => {
-    await getScreenData();
     captureWindows = [];
     preloadCaptureWindows();
   });
@@ -3798,10 +3796,14 @@ function closeCaptureWindows() {
   captureWindows.forEach((captureWindow) => captureWindow.close());
   captureWindows = [];
 }
+function getScreenDataBywId(id) {
+  return screenData.find((item) => item.wId === id);
+}
 async function startScreenShot() {
-  await getScreenData();
   captureWindows.forEach((captureWindow) => {
-    handleScreenShot(captureWindow);
+    var _a;
+    const bounds = (_a = getScreenDataBywId(captureWindow.id)) == null ? void 0 : _a.bounds;
+    handleScreenShot(captureWindow, bounds);
   });
 }
 function addEventListenerOfMain() {
@@ -3855,17 +3857,12 @@ function addEventListenerOfMain() {
   });
 }
 async function preloadCaptureWindows() {
+  await getScreenData();
   try {
-    screenData.forEach(async (screenData2) => {
-      createCaptureWindowProps = {
-        isDarwin,
-        x: screenData2.bounds.x,
-        y: screenData2.bounds.y,
-        screenWidth: screenData2.size.width,
-        screenHeight: screenData2.size.height
-      };
-      const captureWindow = await createCaptureWindow(createCaptureWindowProps);
-      captureWindow.webContents.send("transport-screen-and-window-data", JSON.stringify({ screenData: screenData2, captureWindowId: captureWindow.id }));
+    screenData.map(async (item) => {
+      const captureWindow = await createCaptureWindow(isDarwin);
+      item.wId = captureWindow.id;
+      captureWindow.webContents.send("transport-screen-and-window-data", JSON.stringify({ screenData: item, captureWindowId: captureWindow.id }));
       captureWindows.push(captureWindow);
       countOfCaptureWindowToShot = 0;
     });

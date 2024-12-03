@@ -1,16 +1,14 @@
 import { BrowserWindow } from "electron";
 import path from "path";
-import type { CreateCaptureWindowProps } from "../utils.ts";
 
-export async function createCaptureWindow(createCaptureWindowProps: CreateCaptureWindowProps): Promise<BrowserWindow> {
-  const { x, y, screenWidth, screenHeight, isDarwin } = createCaptureWindowProps;
+export async function createCaptureWindow(isDarwin: boolean): Promise<BrowserWindow> {
   let captureWindow: BrowserWindow = new BrowserWindow({
     frame: false,
     fullscreen: !isDarwin,
-    width: screenWidth,
-    height: screenHeight,
-    x,
-    y,
+    width: 0,
+    height: 0,
+    x: 0,
+    y: 0,
     transparent: true,
     resizable: false,
     movable: false,
@@ -28,9 +26,9 @@ export async function createCaptureWindow(createCaptureWindowProps: CreateCaptur
   });
   captureWindow.setOpacity(0);
   captureWindow.setIgnoreMouseEvents(true);
-  captureWindow.setAlwaysOnTop(true, "screen-saver",2);
+  captureWindow.setAlwaysOnTop(true, "screen-saver", 999);
   captureWindow.setVisibleOnAllWorkspaces(true, {
-    visibleOnFullScreen: true,
+    visibleOnFullScreen: true
   });
   captureWindow.on("closed", () => { 
     captureWindow.destroy();

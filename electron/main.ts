@@ -9,14 +9,12 @@ import {
   handleDownloadImage,
   handleScreenShot,
   getAllDisplays,
-  type CreateCaptureWindowProps,
   type ScreenData
 } from "./utils";
 
 const isDarwin = platform() === "darwin";
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let mainWindow: BrowserWindow | null;
-let createCaptureWindowProps: CreateCaptureWindowProps;
 let screenData: ScreenData[];
 let screenShotData: { id:  number, width?: number, height?: number, dpiScale?: number, name: string} [];
 let captureWindows: BrowserWindow[] = [];
@@ -53,7 +51,6 @@ app.whenReady().then(() => {
   });
   screen.on("display-metrics-changed",async () => {
     // 屏幕尺寸缩放后重新初始化屏幕数据和预创建的截图窗口
-    await getScreenData();
     captureWindows = [];
     preloadCaptureWindows();
   })
@@ -111,10 +108,14 @@ function closeCaptureWindows() {
   captureWindows = [];
 }
 
+function getScreenDataBywId(id: number) {
+  return screenData.find(item => item.wId === id);
+}
+
 async function startScreenShot() {
-  await getScreenData();
   captureWindows.forEach(captureWindow => {
-    handleScreenShot(captureWindow);
+    const bounds = getScreenDataBywId(captureWindow.id)?.bounds;
+    handleScreenShot(captureWindow, bounds);
   })
 }
 
@@ -169,17 +170,12 @@ function addEventListenerOfMain(): void {
 }
 
 async function preloadCaptureWindows() {
+  await getScreenData();
   try {
-    screenData.forEach(async screenData => {
-      createCaptureWindowProps = {
-        isDarwin,
-        x: screenData.bounds.x,
-        y: screenData.bounds.y,
-        screenWidth: screenData.size.width,
-        screenHeight: screenData.size.height
-      }
-      const captureWindow = await createCaptureWindow(createCaptureWindowProps);
-      captureWindow.webContents.send("transport-screen-and-window-data", JSON.stringify({screenData,captureWindowId: captureWindow.id}));
+    screenData.map(async item => {
+      const captureWindow = await createCaptureWindow(isDarwin);
+      item.wId = captureWindow.id;
+      captureWindow.webContents.send("transport-screen-and-window-data", JSON.stringify({screenData:item,captureWindowId: captureWindow.id}));
       captureWindows.push(captureWindow);
       countOfCaptureWindowToShot = 0;
     })

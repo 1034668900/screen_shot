@@ -4,19 +4,21 @@ import fs from "fs/promises";
 import type { PathLike } from "fs";
 
 type Size = { width: number; height: number };
-
+type Bounds = { x: number; y: number } & Size;
 export type ScreenData = {
   id: number;
   size: Size;
   label: string;
   bounds: { x: number; y: number } & Size;
   scaleFactor: number;
+  wId?: number;
 }
 
-function handleScreenShot(captureWindow: BrowserWindow | null) {
-  if (!captureWindow) return;
+function handleScreenShot(captureWindow: BrowserWindow | null, bounds: Bounds | undefined) {
+  if (!captureWindow || !bounds) return;
   captureWindow.webContents.send("start-capture");
   captureWindow.setOpacity(1);
+  captureWindow.setBounds(bounds);
   captureWindow.setIgnoreMouseEvents(false);
 }
 
@@ -67,16 +69,6 @@ function getAllDisplays(): ScreenData[] {
     screenDatas.push(tempScreenData);
   })
   return screenDatas;
-}
-
-
-
-export type CreateCaptureWindowProps = {
-  isDarwin: boolean;
-  screenWidth: number;
-  screenHeight: number;
-  x?: number;
-  y?: number;
 }
 
 export { getCaptureWindowSources, handleSaveImageToClipboard, handleDownloadImage, handleScreenShot, getAllDisplays };
