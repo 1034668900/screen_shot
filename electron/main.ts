@@ -12,6 +12,7 @@ import {
   checkAndApplyScreenShareAccessPrivilege,
   hasScreenShareAcceessPrivilege,
   showNotification,
+  createTray,
   type ScreenData
 } from "./utils";
 
@@ -72,8 +73,8 @@ async function init() {
   addEventListenerOfMain();
   createWindow();
   checkAndApplyScreenShareAccessPrivilege(mainWindow);
+  createTray();
   registerShortcut();
-
 }
 
 function getCaptureWindowById(id: number): BrowserWindow | undefined {

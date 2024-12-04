@@ -1,10 +1,9 @@
-import { type BrowserWindow, nativeImage, clipboard, dialog, screen, systemPreferences, Notification } from "electron";
+import { type BrowserWindow, nativeImage, clipboard, dialog, screen, systemPreferences, Notification, Tray, Menu, app } from "electron";
 import screenshot from "screenshot-desktop";
 import fs from "fs/promises";
 import type { PathLike } from "fs";
-const execCommond = require("child_process").exec;
 import path from "path";
-
+const execCommond = require("child_process").exec;
 
 type Size = { width: number; height: number };
 type Bounds = { x: number; y: number } & Size;
@@ -107,4 +106,13 @@ function showNotification(message: string) {
   notification.show();
 }
 
-export { getCaptureWindowSources, handleSaveImageToClipboard, handleDownloadImage, handleScreenShot, getAllDisplays, checkAndApplyScreenShareAccessPrivilege, hasScreenShareAcceessPrivilege, showNoScreenShareAccessPrivilegeDialog, showNotification };
+function createTray() {
+  const tray = new Tray(path.join(__dirname, "../public/trayIconTemplate@2x.png"))
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'exit', type: 'checkbox', click: () =>  app.quit()},
+  ])
+  tray.setToolTip('This is my application.')
+  tray.setContextMenu(contextMenu)
+}
+
+export { getCaptureWindowSources, handleSaveImageToClipboard, handleDownloadImage, handleScreenShot, getAllDisplays, checkAndApplyScreenShareAccessPrivilege, hasScreenShareAcceessPrivilege, showNoScreenShareAccessPrivilegeDialog, showNotification, createTray };
