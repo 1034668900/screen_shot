@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, screen } from "electron";
+import { app, BrowserWindow, ipcMain, globalShortcut, screen, systemPreferences, dialog } from "electron";
 import { createCaptureWindow } from "./captureWindow/createCaptureWindow";
 import path from "path";
 import { platform } from "os";
@@ -9,6 +9,7 @@ import {
   handleDownloadImage,
   handleScreenShot,
   getAllDisplays,
+  checkAndApplyScreenShareAccessPrivilege,
   type ScreenData
 } from "./utils";
 
@@ -66,6 +67,7 @@ async function init() {
   await getScreenData();
   addEventListenerOfMain();
   createWindow();
+  checkAndApplyScreenShareAccessPrivilege(mainWindow);
   registerShortcut();
 }
 

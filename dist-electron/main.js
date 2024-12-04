@@ -3661,6 +3661,7 @@ if (process.platform === "linux") {
 }
 var screenshotDesktopExports = screenshotDesktop.exports;
 const screenshot = /* @__PURE__ */ getDefaultExportFromCjs(screenshotDesktopExports);
+const execCommond = require("child_process").exec;
 function handleScreenShot(captureWindow, bounds) {
   if (!captureWindow || !bounds)
     return;
@@ -3716,6 +3717,21 @@ function getAllDisplays() {
   });
   return screenDatas;
 }
+async function checkAndApplyScreenShareAccessPrivilege(mainWindow2) {
+  if (process.platform === "linux" || !mainWindow2)
+    return;
+  const screenPrivilege = electron.systemPreferences.getMediaAccessStatus("screen");
+  if (screenPrivilege !== "granted") {
+    const res = await electron.dialog.showMessageBox(mainWindow2, {
+      title: "权限申请",
+      message: "当前应用无屏幕捕获权限，即将跳转至授权页面，请授权后重新启动应用。",
+      textWidth: 450
+    });
+    if (res.response === 0) {
+      execCommond(`open x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture`);
+    }
+  }
+}
 const isDarwin = require$$3$1.platform() === "darwin";
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 let mainWindow;
@@ -3762,6 +3778,7 @@ async function init() {
   await getScreenData();
   addEventListenerOfMain();
   createWindow();
+  checkAndApplyScreenShareAccessPrivilege(mainWindow);
   registerShortcut();
 }
 function getCaptureWindowById(id) {

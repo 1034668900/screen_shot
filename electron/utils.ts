@@ -1,7 +1,9 @@
-import { type BrowserWindow, nativeImage, clipboard, dialog, screen } from "electron";
+import { type BrowserWindow, nativeImage, clipboard, dialog, screen, systemPreferences } from "electron";
 import screenshot from "screenshot-desktop";
 import fs from "fs/promises";
 import type { PathLike } from "fs";
+const execCommond = require("child_process").exec;
+
 
 type Size = { width: number; height: number };
 type Bounds = { x: number; y: number } & Size;
@@ -71,4 +73,20 @@ function getAllDisplays(): ScreenData[] {
   return screenDatas;
 }
 
-export { getCaptureWindowSources, handleSaveImageToClipboard, handleDownloadImage, handleScreenShot, getAllDisplays };
+async function checkAndApplyScreenShareAccessPrivilege(mainWindow: BrowserWindow | null) {
+  if (process.platform === "linux" || !mainWindow) return;
+  const screenPrivilege = systemPreferences.getMediaAccessStatus("screen");
+
+  if (screenPrivilege !== "granted") {
+    const res = await dialog.showMessageBox(mainWindow, {
+      title: '权限申请',
+      message: '当前应用无屏幕捕获权限，即将跳转至授权页面，请授权后重新启动应用。',
+      textWidth: 450,
+    })
+    if (res.response === 0) {
+      execCommond(`open x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture`); 
+    }
+  }
+}
+
+export { getCaptureWindowSources, handleSaveImageToClipboard, handleDownloadImage, handleScreenShot, getAllDisplays, checkAndApplyScreenShareAccessPrivilege };
