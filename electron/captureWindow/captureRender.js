@@ -1,4 +1,4 @@
-import { operateDoms } from "./capture.js";
+import { operateDoms } from './capture.js';
 
 class captureRender extends Event {
   isMouseDown = false;
@@ -22,11 +22,15 @@ class captureRender extends Event {
   screenEndY = 0;
   shotRect = {};
 
-  constructor($canvas, $bg, $toolBar, imgDataURL, screenData) {
+  constructor(...args) {
     super([arguments]);
+    this.init(...args);
+  }
+
+  init($canvas, $bg, $toolBar, imgDataURL, screenData) {
     const { bounds, scaleFactor, size } = screenData;
     this.$canvas = $canvas;
-    this.ctx = $canvas.getContext("2d", {willReadFrequently : true});
+    this.ctx = $canvas.getContext('2d', { willReadFrequently: true });
     this.$bg = $bg;
     this.$toolBar = $toolBar;
     this.toolBarWidth = parseInt(getComputedStyle(this.$toolBar).width);
@@ -38,16 +42,17 @@ class captureRender extends Event {
     this.screenHeight = size.height;
     this.relativeX = bounds.x;
     this.relativeY = bounds.y;
-    this.screenEndX =this.relativeX + this.screenWidth;
+    this.screenEndX = this.relativeX + this.screenWidth;
     this.screenEndY = this.relativeY + this.screenHeight;
     this.scaleFactor = scaleFactor;
-    this.init();
+    this.saveOriginImage();
   }
-  async init() {
+
+  async saveOriginImage() {
     this.$bg.style.backgroundImage = `url(${this.imgDataURL})`;
     this.$bg.style.backgroundSize = `${this.canvasWidth}px,${this.canvasHeight}px`;
-    let canvas = document.createElement("canvas");
-    let ctx = canvas.getContext("2d", {willReadFrequently: true});
+    let canvas = document.createElement('canvas');
+    let ctx = canvas.getContext('2d', { willReadFrequently: true });
     const img = await this.onloadImage(this.imgDataURL);
     canvas.width = this.canvasWidth * this.scaleFactor;
     canvas.height = this.canvasHeight * this.scaleFactor;
@@ -59,19 +64,28 @@ class captureRender extends Event {
     ctx = null;
     canvas = null;
   }
+
   async showToolBar() {
     const { startX, startY, width, height } = this.shotRect;
-    const toolBarLeft = startY + height >= this.screenEndY - this.toolBarHeight ? startX + width + 5 : startX + width - this.toolBarWidth;
-    const toolBarTop = startY + height >= this.screenEndY - this.toolBarHeight ? startY + height - this.toolBarHeight : startY + height + 10;
+    const toolBarLeft =
+      startY + height >= this.screenEndY - this.toolBarHeight
+        ? startX + width + 5
+        : startX + width - this.toolBarWidth;
+    const toolBarTop =
+      startY + height >= this.screenEndY - this.toolBarHeight
+        ? startY + height - this.toolBarHeight
+        : startY + height + 10;
 
     this.$toolBar.style.left = `${toolBarLeft}px`;
     this.$toolBar.style.top = `${toolBarTop}px`;
-    this.$toolBar.style.display = "flex";
+    this.$toolBar.style.display = 'flex';
     this.getShotRectImageURL();
   }
+
   async saveImageToClipboard() {
-    await electronAPI.saveImageToClipboard(this.getShotRectImageURL())
+    await electronAPI.saveImageToClipboard(this.getShotRectImageURL());
   }
+
   async onloadImage(imgDataURL) {
     const img = new Image();
     img.src = imgDataURL;
@@ -79,55 +93,16 @@ class captureRender extends Event {
       img.onload = () => resolve(img);
     });
   }
-  addListenerForDrawRectangle() {
-    window.addEventListener("mousedown", this.drawRectangleDownCallback.bind(this));
-    window.addEventListener("mousemove", this.drawRectangleMoveCallback.bind(this));
-    window.addEventListener("mouseup", this.drawRectangleUpCallback.bind(this));
-  }
-  removeListenerForDrawRectangle() {
-    window.removeEventListener("mousedown", this.drawRectangleDownCallback.bind(this));
-    window.removeEventListener("mousemove", this.drawRectangleMoveCallback.bind(this));
-    window.removeEventListener("mouseup", this.drawRectangleUpCallback.bind(this));
-  }
+
   judgePoinstIsInCanvas(x, y) {
-    return x >= this.relativeX && x <= this.screenEndX && y >= this.relativeY && y <= this.screenEndY;
+    return (
+      x >= this.relativeX &&
+      x <= this.screenEndX &&
+      y >= this.relativeY &&
+      y <= this.screenEndY
+    );
   }
-  addListenerForCanvasDrag() {
-    this.$canvas.addEventListener("mousedown", (e) => {
-      if (!this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
-      const { startX, startY } = this.shotRect;
-      this.isDrag = true;
-      this.dragPointX = e.screenX;
-      this.dragPointY = e.screenY;
-      this.dragDiffWidth = this.dragPointX - startX;
-      this.dragDiffHeight = this.dragPointY - startY;
-      this.hideToolBar();
-    });
 
-    this.$canvas.addEventListener("mousemove", (e) => {
-      if (!this.isDrag) return;
-      if (!this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
-      this.dragPointX = e.screenX;
-      this.dragPointY = e.screenY;
-
-      const tempStartX = this.dragPointX - this.dragDiffWidth + this.relativeX;
-      const tempStartY = this.dragPointY - this.dragDiffHeight + this.relativeY;
-
-      this.startX = tempStartX <= this.relativeX ? this.relativeX : tempStartX;
-      this.startX = this.startX + this.canvasWidth >= this.screenEndX ? this.screenEndX - this.canvasWidth : this.startX;
-      this.startY = tempStartY <= this.relativeY ? this.relativeY : tempStartY;
-      this.startY = this.startY + this.canvasHeight >= this.screenEndY ? this.screenEndY - this.canvasHeight : this.startY;
-      this.endX = this.startX + this.canvasWidth;
-      this.endY = this.startY + this.canvasHeight;
-
-      this.drawRectangle();
-    });
-
-    this.$canvas.addEventListener("mouseup", (e) => { 
-      this.isDrag = false;
-      this.showToolBar();
-    });
-  }
   drawRectangle() {
     this.isCapture = true;
 
@@ -140,7 +115,7 @@ class captureRender extends Event {
     const tempEndY = Math.max(this.startY, this.endY) - this.relativeY;
     const endX = tempEndX > this.screenWidth ? this.screenWidth : tempEndX;
     const endY = tempEndY > this.screenHeight ? this.screenHeight : tempEndY;
-    
+
     const width = endX - startX;
     const height = endY - startY;
 
@@ -150,7 +125,7 @@ class captureRender extends Event {
     this.canvasWidth = width;
     this.canvasHeight = height;
 
-    const margin = 2;// 捕获窗口的边框
+    const margin = 2; // 捕获窗口的边框
     const scaleFactor = this.scaleFactor;
     const canvasWidth = width + 2 * margin;
     const canvasHeight = height + 2 * margin;
@@ -158,10 +133,10 @@ class captureRender extends Event {
     this.shotRect = { startX, startY, width, height };
     this.$canvas.width = (width + margin * 2) * scaleFactor;
     this.$canvas.height = (height + margin * 2) * scaleFactor;
-    this.$canvas.style.position = "absolute";
+    this.$canvas.style.position = 'absolute';
     this.$canvas.style.left = `${startX - margin}px`;
     this.$canvas.style.top = `${startY - margin}px`;
-    this.$canvas.style.display = "block";
+    this.$canvas.style.display = 'block';
     this.$canvas.style.width = `${canvasWidth}px`;
     this.$canvas.style.height = `${canvasHeight}px`;
     if (width && height) {
@@ -178,28 +153,32 @@ class captureRender extends Event {
       );
     }
     // 绘制截图窗口边框
-    this.ctx.fillStyle = "#FFFFFF";
-    this.ctx.strokeStyle = "#67BADE";
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.strokeStyle = '#67BADE';
     this.ctx.lineWidth = margin * scaleFactor;
     this.ctx.strokeRect(
       margin * scaleFactor,
       margin * scaleFactor,
-      width  * scaleFactor,
+      width * scaleFactor,
       height * scaleFactor
     );
   }
+
   hideToolBar() {
-    this.$toolBar.style.display = "none";
+    this.$toolBar.style.display = 'none';
   }
+
   clearCanvas() {
     this.ctx.clearRect(0, 0, this.$canvas.width, this.$canvas.height);
     this.canvasWidth = 0;
     this.canvasHeight = 0;
     this.isCapture = false;
   }
+
   isLegalOfRectSize() {
-    return (this.canvasWidth > 5 && this.canvasHeight > 5);
+    return this.canvasWidth > 5 && this.canvasHeight > 5;
   }
+
   getShotRectImageURL() {
     const { startX, startY, width, height } = this.shotRect;
     const scaleFactor = this.scaleFactor;
@@ -210,27 +189,36 @@ class captureRender extends Event {
         width * scaleFactor,
         height * scaleFactor
       );
-      const canvas = document.createElement("canvas");
+      const canvas = document.createElement('canvas');
       canvas.width = width * scaleFactor;
       canvas.height = height * scaleFactor;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
       ctx.putImageData(imageDataURL, 0, 0);
       return canvas.toDataURL();
     }
     return null;
   }
+
   closeCaptureWindow() {
     electronAPI.closeCaptureWindow();
   }
+
   downloadImage(id) {
     electronAPI.downloadImage(id, this.getShotRectImageURL());
   }
+
   judgePoinstIsInCanvas(x, y) {
     const { startX, startY, width, height } = this.shotRect;
     const left = x - this.relativeX;
     const top = y - this.relativeY;
-    return (left >= startX && left <= startX + width && top >= startY && top <= startY + height);
+    return (
+      left >= startX &&
+      left <= startX + width &&
+      top >= startY &&
+      top <= startY + height
+    );
   }
+
   drawRectangleDownCallback(e) {
     if (operateDoms.includes(e.target.id)) return; // 鼠标点击在操作按钮上不触发以下逻辑
     if (this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
@@ -240,12 +228,14 @@ class captureRender extends Event {
     this.hideToolBar();
     this.clearCanvas();
   }
+
   drawRectangleMoveCallback(e) {
     if (!this.isMouseDown) return;
     this.endX = e.screenX;
     this.endY = e.screenY;
     this.drawRectangle();
   }
+
   drawRectangleUpCallback(e) {
     if (operateDoms.includes(e.target.id)) {
       return;
@@ -257,6 +247,76 @@ class captureRender extends Event {
     } else {
       this.clearCanvas();
     }
+  }
+
+  dragCanvasDownCallback(e) {
+    if (!this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
+    const { startX, startY } = this.shotRect;
+    this.isDrag = true;
+    this.dragPointX = e.screenX;
+    this.dragPointY = e.screenY;
+    this.dragDiffWidth = this.dragPointX - startX;
+    this.dragDiffHeight = this.dragPointY - startY;
+    this.hideToolBar();
+  }
+
+  dragCanvasMoveCallback(e) {
+    if (!this.isDrag) return;
+    if (!this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
+    this.dragPointX = e.screenX;
+    this.dragPointY = e.screenY;
+
+    const tempStartX = this.dragPointX - this.dragDiffWidth + this.relativeX;
+    const tempStartY = this.dragPointY - this.dragDiffHeight + this.relativeY;
+
+    this.startX = tempStartX <= this.relativeX ? this.relativeX : tempStartX;
+    this.startX =
+      this.startX + this.canvasWidth >= this.screenEndX
+        ? this.screenEndX - this.canvasWidth
+        : this.startX;
+    this.startY = tempStartY <= this.relativeY ? this.relativeY : tempStartY;
+    this.startY =
+      this.startY + this.canvasHeight >= this.screenEndY
+        ? this.screenEndY - this.canvasHeight
+        : this.startY;
+    this.endX = this.startX + this.canvasWidth;
+    this.endY = this.startY + this.canvasHeight;
+
+    this.drawRectangle();
+  }
+
+  dragCanvasUpCallback(e) {
+    this.isDrag = false;
+    this.showToolBar();
+  }
+
+  addListenerForDrawRectangle() {
+    window.addEventListener(
+      'mousedown',
+      this.drawRectangleDownCallback.bind(this)
+    );
+    window.addEventListener(
+      'mousemove',
+      this.drawRectangleMoveCallback.bind(this)
+    );
+    window.addEventListener('mouseup', this.drawRectangleUpCallback.bind(this));
+  }
+
+  addListenerForCanvasDrag() {
+    this.$canvas.addEventListener(
+      'mousedown',
+      this.dragCanvasDownCallback.bind(this)
+    );
+
+    this.$canvas.addEventListener(
+      'mousemove',
+      this.dragCanvasMoveCallback.bind(this)
+    );
+
+    this.$canvas.addEventListener(
+      'mouseup',
+      this.dragCanvasUpCallback.bind(this)
+    );
   }
 }
 
