@@ -4,7 +4,7 @@
       <Header />
     </div>
     <div class="operate-area">
-      <button @click="handleScreenShot">截图</button>
+      <button style="cursor: pointer;" @click="handleScreenShot">截图</button>
     </div>
   </div>
 </template>

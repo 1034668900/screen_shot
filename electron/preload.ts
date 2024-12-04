@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("electronAPI", {
   startScreenShot: () => ipcRenderer.invoke("screen:shot"),
   closeWindow: () => ipcRenderer.invoke("window:close"),
+  minimizeWindow: () => ipcRenderer.invoke("window:minimize"),
   getCaptureWindowSources: (screenId: number, screenWidth: number, screenHeight: number, screenScaleFactor: number) => ipcRenderer.invoke("captureWindow:sources",screenId,screenWidth, screenHeight,screenScaleFactor),
   saveImageToClipboard: (ImageDataURL: string) => ipcRenderer.invoke("saveClipboard:image", ImageDataURL),
   closeCaptureWindow: () => ipcRenderer.invoke("captureWindow:close"),

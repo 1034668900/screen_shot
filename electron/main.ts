@@ -30,6 +30,7 @@ const createWindow = () => {
     height: 600,
     skipTaskbar: false,
     alwaysOnTop: false,
+    show: true,
     webPreferences: {
       webSecurity: false,
       nodeIntegration: false,
@@ -140,6 +141,10 @@ function addEventListenerOfMain(): void {
     mainWindow?.close();
     app.quit();
     console.log("------> close allWindow success!");
+  });
+  ipcMain.handle("window:minimize", () => {
+    mainWindow?.minimize();
+    console.log("------> minimize allWindow success!");
   });
   ipcMain.handle("captureWindow:close", async () => {
     closeCaptureWindows();

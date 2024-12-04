@@ -2,6 +2,8 @@
 declare interface Window {
   electronAPI: {
     startScreenShot: () => Promise<string>;
+    closeWindow: () => void;
+    minimizeWindow: () => void;
   };
 }
 
