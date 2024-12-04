@@ -1,8 +1,9 @@
-import { type BrowserWindow, nativeImage, clipboard, dialog, screen, systemPreferences } from "electron";
+import { type BrowserWindow, nativeImage, clipboard, dialog, screen, systemPreferences, Notification } from "electron";
 import screenshot from "screenshot-desktop";
 import fs from "fs/promises";
 import type { PathLike } from "fs";
 const execCommond = require("child_process").exec;
+import path from "path";
 
 
 type Size = { width: number; height: number };
@@ -75,18 +76,35 @@ function getAllDisplays(): ScreenData[] {
 
 async function checkAndApplyScreenShareAccessPrivilege(mainWindow: BrowserWindow | null) {
   if (process.platform === "linux" || !mainWindow) return;
-  const screenPrivilege = systemPreferences.getMediaAccessStatus("screen");
+  const screenPrivilege = hasScreenShareAcceessPrivilege();
 
-  if (screenPrivilege !== "granted") {
-    const res = await dialog.showMessageBox(mainWindow, {
-      title: '权限申请',
-      message: '当前应用无屏幕捕获权限，即将跳转至授权页面，请授权后重新启动应用。',
-      textWidth: 450,
-    })
+  if (!screenPrivilege) {
+    const res = await showNoScreenShareAccessPrivilegeDialog(mainWindow);
     if (res.response === 0) {
       execCommond(`open x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture`); 
     }
   }
 }
 
-export { getCaptureWindowSources, handleSaveImageToClipboard, handleDownloadImage, handleScreenShot, getAllDisplays, checkAndApplyScreenShareAccessPrivilege };
+async function showNoScreenShareAccessPrivilegeDialog(window: BrowserWindow | null) { 
+  if (!window) return { response: 1};
+  return await dialog.showMessageBox(window, {
+    title: '权限申请',
+    message: '当前应用无屏幕捕获权限，即将跳转至授权页面，请授权后重新启动应用。',
+    textWidth: 450,
+  })
+}
+
+function hasScreenShareAcceessPrivilege() { 
+  return systemPreferences.getMediaAccessStatus("screen") === "granted";
+}
+
+function showNotification(message: string) {
+  const notification = new Notification({
+    title: 'screen shot',
+    body: message,
+  });
+  notification.show();
+}
+
+export { getCaptureWindowSources, handleSaveImageToClipboard, handleDownloadImage, handleScreenShot, getAllDisplays, checkAndApplyScreenShareAccessPrivilege, hasScreenShareAcceessPrivilege, showNoScreenShareAccessPrivilegeDialog, showNotification };

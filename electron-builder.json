@@ -2,6 +2,7 @@
   "appId": "com.electron.desktop",
   "asar": true,
   "copyright": "Copyright © 2022 electron",
+  "icon": "public/icon.png",
   "directories": {
     "output": "release/"
   },
@@ -35,6 +36,7 @@
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
     "target": ["dmg"],
+    "icon": "public/icon.png",
     "asar": true
   },
   "win": {

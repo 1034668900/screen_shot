@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, screen, systemPreferences, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, globalShortcut, screen } from "electron";
 import { createCaptureWindow } from "./captureWindow/createCaptureWindow";
 import path from "path";
 import { platform } from "os";
@@ -10,6 +10,8 @@ import {
   handleScreenShot,
   getAllDisplays,
   checkAndApplyScreenShareAccessPrivilege,
+  hasScreenShareAcceessPrivilege,
+  showNotification,
   type ScreenData
 } from "./utils";
 
@@ -26,6 +28,8 @@ const createWindow = () => {
     frame: false,
     width: 450,
     height: 600,
+    skipTaskbar: false,
+    alwaysOnTop: false,
     webPreferences: {
       webSecurity: false,
       nodeIntegration: false,
@@ -33,8 +37,7 @@ const createWindow = () => {
       preload: path.join(__dirname, "../dist-electron/preload.js"),
     },
   });
-
-  mainWindow.hide();
+  mainWindow.setSkipTaskbar(false);
   // 主窗口创建时预创建捕获窗口
   preloadCaptureWindows();
 
@@ -69,6 +72,7 @@ async function init() {
   createWindow();
   checkAndApplyScreenShareAccessPrivilege(mainWindow);
   registerShortcut();
+
 }
 
 function getCaptureWindowById(id: number): BrowserWindow | undefined {
@@ -115,6 +119,9 @@ function getScreenDataBywId(id: number) {
 }
 
 async function startScreenShot() {
+  if (!hasScreenShareAcceessPrivilege()) {
+    return showNotification('请先授权应用捕获屏幕权限！')
+  }
   captureWindows.forEach(captureWindow => {
     const bounds = getScreenDataBywId(captureWindow.id)?.bounds;
     handleScreenShot(captureWindow, bounds);
@@ -131,6 +138,7 @@ function addEventListenerOfMain(): void {
   ipcMain.handle("window:close", () => {
     closeCaptureWindows();
     mainWindow?.close();
+    app.quit();
     console.log("------> close allWindow success!");
   });
   ipcMain.handle("captureWindow:close", async () => {

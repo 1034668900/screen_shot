@@ -1,6 +1,6 @@
 "use strict";
 const electron = require("electron");
-const require$$1 = require("path");
+const path = require("path");
 const require$$3$1 = require("os");
 const require$$0$1 = require("child_process");
 const require$$0 = require("fs");
@@ -30,7 +30,7 @@ async function createCaptureWindow(isDarwin2) {
       webSecurity: false,
       nodeIntegration: false,
       contextIsolation: true,
-      preload: require$$1.join(__dirname, "preload.js")
+      preload: path.join(__dirname, "preload.js")
     }
   });
   captureWindow.setOpacity(0);
@@ -43,7 +43,7 @@ async function createCaptureWindow(isDarwin2) {
     captureWindow.destroy();
   });
   await captureWindow.loadFile(
-    require$$1.join(__dirname, "../electron/captureWindow/capture.html")
+    path.join(__dirname, "../electron/captureWindow/capture.html")
   );
   return captureWindow;
 }
@@ -58,9 +58,9 @@ function requireUtils() {
     return utils;
   hasRequiredUtils = 1;
   const fs2 = require$$0;
-  function unlinkP(path) {
+  function unlinkP(path2) {
     return new Promise((resolve, reject) => {
-      fs2.unlink(path, function(err) {
+      fs2.unlink(path2, function(err) {
         if (err) {
           return reject(err);
         }
@@ -68,9 +68,9 @@ function requireUtils() {
       });
     });
   }
-  function readFileP(path) {
+  function readFileP(path2) {
     return new Promise((resolve, reject) => {
-      fs2.readFile(path, function(err, img) {
+      fs2.readFile(path2, function(err, img) {
         if (err) {
           return reject(err);
         }
@@ -78,10 +78,10 @@ function requireUtils() {
       });
     });
   }
-  function readAndUnlinkP(path) {
+  function readAndUnlinkP(path2) {
     return new Promise((resolve, reject) => {
-      readFileP(path).then((img) => {
-        unlinkP(path).then(() => resolve(img)).catch(reject);
+      readFileP(path2).then((img) => {
+        unlinkP(path2).then(() => resolve(img)).catch(reject);
       }).catch(reject);
     });
   }
@@ -108,7 +108,7 @@ function requireLinux() {
     return linux;
   hasRequiredLinux = 1;
   const exec = require$$0$1.exec;
-  const path = require$$1;
+  const path$1 = path;
   const defaultAll = requireUtils().defaultAll;
   const EXAMPLE_DISPLAYS_OUTPUT = `Screen 0: minimum 320 x 200, current 5760 x 1080, maximum 8192 x 8192
 eDP-1 connected (normal left inverted right x axis y axis)
@@ -232,7 +232,7 @@ DP-2-3 disconnected (normal left inverted right x axis y axis)`;
     return total;
   }
   function guessFiletype(filename) {
-    switch (path.extname(filename)) {
+    switch (path$1.extname(filename)) {
       case ".jpg":
       case ".jpeg":
         return "jpeg";
@@ -268,7 +268,7 @@ DP-2-3 disconnected (normal left inverted right x axis y axis)`;
             if (err) {
               return reject(err);
             } else {
-              return resolve(options.filename ? path.resolve(options.filename) : stdout);
+              return resolve(options.filename ? path$1.resolve(options.filename) : stdout);
             }
           }
         );
@@ -289,7 +289,7 @@ function requireOld() {
   if (hasRequiredOld)
     return old;
   hasRequiredOld = 1;
-  var pathModule = require$$1;
+  var pathModule = path;
   var isWindows = process.platform === "win32";
   var fs2 = require$$0;
   var DEBUG = process.env.NODE_DEBUG && /fs/.test(process.env.NODE_DEBUG);
@@ -794,7 +794,7 @@ function requireMinimatch() {
   hasRequiredMinimatch = 1;
   minimatch_1 = minimatch;
   minimatch.Minimatch = Minimatch;
-  var path = function() {
+  var path2 = function() {
     try {
       return require("path");
     } catch (e) {
@@ -802,7 +802,7 @@ function requireMinimatch() {
   }() || {
     sep: "/"
   };
-  minimatch.sep = path.sep;
+  minimatch.sep = path2.sep;
   var GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {};
   var expand = requireBraceExpansion();
   var plTypes = {
@@ -893,8 +893,8 @@ function requireMinimatch() {
     if (!options)
       options = {};
     pattern = pattern.trim();
-    if (!options.allowWindowsEscape && path.sep !== "/") {
-      pattern = pattern.split(path.sep).join("/");
+    if (!options.allowWindowsEscape && path2.sep !== "/") {
+      pattern = pattern.split(path2.sep).join("/");
     }
     this.options = options;
     this.set = [];
@@ -1271,8 +1271,8 @@ function requireMinimatch() {
     if (f === "/" && partial)
       return true;
     var options = this.options;
-    if (path.sep !== "/") {
-      f = f.split(path.sep).join("/");
+    if (path2.sep !== "/") {
+      f = f.split(path2.sep).join("/");
     }
     f = f.split(slashSplit);
     this.debug(this.pattern, "split", f);
@@ -1434,12 +1434,12 @@ function requirePathIsAbsolute() {
   if (hasRequiredPathIsAbsolute)
     return pathIsAbsolute.exports;
   hasRequiredPathIsAbsolute = 1;
-  function posix(path) {
-    return path.charAt(0) === "/";
+  function posix(path2) {
+    return path2.charAt(0) === "/";
   }
-  function win322(path) {
+  function win322(path2) {
     var splitDeviceRe = /^([a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/]+[^\\\/]+)?([\\\/])?([\s\S]*?)$/;
-    var result = splitDeviceRe.exec(path);
+    var result = splitDeviceRe.exec(path2);
     var device = result[1] || "";
     var isUnc = Boolean(device && device.charAt(1) !== ":");
     return Boolean(result[2] || isUnc);
@@ -1466,7 +1466,7 @@ function requireCommon() {
     return Object.prototype.hasOwnProperty.call(obj, field);
   }
   var fs2 = require$$0;
-  var path = require$$1;
+  var path$1 = path;
   var minimatch = requireMinimatch();
   var isAbsolute = requirePathIsAbsolute();
   var Minimatch = minimatch.Minimatch;
@@ -1531,11 +1531,11 @@ function requireCommon() {
     if (!ownProp(options, "cwd"))
       self.cwd = cwd;
     else {
-      self.cwd = path.resolve(options.cwd);
+      self.cwd = path$1.resolve(options.cwd);
       self.changedCwd = self.cwd !== cwd;
     }
-    self.root = options.root || path.resolve(self.cwd, "/");
-    self.root = path.resolve(self.root);
+    self.root = options.root || path$1.resolve(self.cwd, "/");
+    self.root = path$1.resolve(self.root);
     if (process.platform === "win32")
       self.root = self.root.replace(/\\/g, "/");
     self.cwdAbs = isAbsolute(self.cwd) ? self.cwd : makeAbs(self, self.cwd);
@@ -1617,13 +1617,13 @@ function requireCommon() {
   function makeAbs(self, f) {
     var abs = f;
     if (f.charAt(0) === "/") {
-      abs = path.join(self.root, f);
+      abs = path$1.join(self.root, f);
     } else if (isAbsolute(f) || f === "") {
       abs = f;
     } else if (self.changedCwd) {
-      abs = path.resolve(self.cwd, f);
+      abs = path$1.resolve(self.cwd, f);
     } else {
-      abs = path.resolve(f);
+      abs = path$1.resolve(f);
     }
     if (process.platform === "win32")
       abs = abs.replace(/\\/g, "/");
@@ -1657,7 +1657,7 @@ function requireSync() {
   var minimatch = requireMinimatch();
   minimatch.Minimatch;
   requireGlob().Glob;
-  var path = require$$1;
+  var path$1 = path;
   var assert = require$$5;
   var isAbsolute = requirePathIsAbsolute();
   var common2 = requireCommon();
@@ -1785,7 +1785,7 @@ function requireSync() {
             e = prefix + e;
         }
         if (e.charAt(0) === "/" && !this.nomount) {
-          e = path.join(this.root, e);
+          e = path$1.join(this.root, e);
         }
         this._emitMatch(index, e);
       }
@@ -1932,9 +1932,9 @@ function requireSync() {
     if (prefix && isAbsolute(prefix) && !this.nomount) {
       var trail = /[\/\\]$/.test(prefix);
       if (prefix.charAt(0) === "/") {
-        prefix = path.join(this.root, prefix);
+        prefix = path$1.join(this.root, prefix);
       } else {
-        prefix = path.resolve(this.root, prefix);
+        prefix = path$1.resolve(this.root, prefix);
         if (trail)
           prefix += "/";
       }
@@ -2136,7 +2136,7 @@ function requireGlob() {
   minimatch.Minimatch;
   var inherits2 = requireInherits();
   var EE = require$$3.EventEmitter;
-  var path = require$$1;
+  var path$1 = path;
   var assert = require$$5;
   var isAbsolute = requirePathIsAbsolute();
   var globSync = requireSync();
@@ -2418,7 +2418,7 @@ function requireGlob() {
             e = prefix + e;
         }
         if (e.charAt(0) === "/" && !this.nomount) {
-          e = path.join(this.root, e);
+          e = path$1.join(this.root, e);
         }
         this._emitMatch(index, e);
       }
@@ -2604,9 +2604,9 @@ function requireGlob() {
     if (prefix && isAbsolute(prefix) && !this.nomount) {
       var trail = /[\/\\]$/.test(prefix);
       if (prefix.charAt(0) === "/") {
-        prefix = path.join(this.root, prefix);
+        prefix = path$1.join(this.root, prefix);
       } else {
-        prefix = path.resolve(this.root, prefix);
+        prefix = path$1.resolve(this.root, prefix);
         if (trail)
           prefix += "/";
       }
@@ -2687,7 +2687,7 @@ function requireRimraf() {
   rimraf_1 = rimraf;
   rimraf.sync = rimrafSync;
   var assert = require$$5;
-  var path = require$$1;
+  var path$1 = path;
   var fs2 = require$$0;
   var glob = requireGlob();
   var _0666 = parseInt("666", 8);
@@ -2872,7 +2872,7 @@ function requireRimraf() {
         return options.rmdir(p, cb);
       var errState;
       files.forEach(function(f) {
-        rimraf(path.join(p, f), options, function(er2) {
+        rimraf(path$1.join(p, f), options, function(er2) {
           if (errState)
             return;
           if (er2)
@@ -2949,7 +2949,7 @@ function requireRimraf() {
     assert(p);
     assert(options);
     options.readdirSync(p).forEach(function(f) {
-      rimrafSync(path.join(p, f), options);
+      rimrafSync(path$1.join(p, f), options);
     });
     var retries = isWindows ? 100 : 1;
     var i = 0;
@@ -2973,7 +2973,7 @@ function requireMkdirp() {
   if (hasRequiredMkdirp)
     return mkdirp;
   hasRequiredMkdirp = 1;
-  var path = require$$1;
+  var path$1 = path;
   var fs2 = require$$0;
   var _0777 = parseInt("0777", 8);
   mkdirp = mkdirP.mkdirp = mkdirP.mkdirP = mkdirP;
@@ -2994,7 +2994,7 @@ function requireMkdirp() {
     var cb = f || /* istanbul ignore next */
     function() {
     };
-    p = path.resolve(p);
+    p = path$1.resolve(p);
     xfs.mkdir(p, mode, function(er) {
       if (!er) {
         made = made || p;
@@ -3002,9 +3002,9 @@ function requireMkdirp() {
       }
       switch (er.code) {
         case "ENOENT":
-          if (path.dirname(p) === p)
+          if (path$1.dirname(p) === p)
             return cb(er);
-          mkdirP(path.dirname(p), opts, function(er2, made2) {
+          mkdirP(path$1.dirname(p), opts, function(er2, made2) {
             if (er2)
               cb(er2, made2);
             else
@@ -3033,14 +3033,14 @@ function requireMkdirp() {
     }
     if (!made)
       made = null;
-    p = path.resolve(p);
+    p = path$1.resolve(p);
     try {
       xfs.mkdirSync(p, mode);
       made = made || p;
     } catch (err0) {
       switch (err0.code) {
         case "ENOENT":
-          made = sync2(path.dirname(p), opts, made);
+          made = sync2(path$1.dirname(p), opts, made);
           sync2(p, opts, made);
           break;
         default:
@@ -3066,14 +3066,14 @@ function requireTemp() {
   hasRequiredTemp = 1;
   (function(module, exports) {
     let fs2 = require$$0;
-    let path = require$$1;
+    let path$1 = path;
     let cnst = require$$2;
     let os = require$$3$1;
     let rimraf = requireRimraf();
     let mkdirp2 = requireMkdirp();
     require$$3$1.tmpdir();
     const rimrafSync = rimraf.sync;
-    let dir = path.resolve(os.tmpdir());
+    let dir = path$1.resolve(os.tmpdir());
     let RDWR_EXCL = cnst.O_CREAT | cnst.O_TRUNC | cnst.O_RDWR | cnst.O_EXCL;
     let promisify = function(callback) {
       if (typeof callback === "function") {
@@ -3111,7 +3111,7 @@ function requireTemp() {
         (Math.random() * 4294967296 + 1).toString(36),
         affixes.suffix
       ].join("");
-      return path.join(affixes.dir || dir, name);
+      return path$1.join(affixes.dir || dir, name);
     };
     var parseAffixes = function(rawAffixes, defaultPrefix) {
       var affixes = { prefix: null, suffix: null };
@@ -3356,7 +3356,7 @@ function requireDarwin() {
   const temp2 = requireTemp();
   const fs2 = require$$0;
   const utils2 = requireUtils();
-  const path = require$$1;
+  const path$1 = path;
   const { unlinkP, readAndUnlinkP } = utils2;
   function darwinSnapshot(options = {}) {
     const performScreenCapture = (displays) => new Promise((resolve, reject) => {
@@ -3392,7 +3392,7 @@ function requireDarwin() {
           if (err) {
             return reject(err);
           } else if (options.filename) {
-            resolve(path.resolve(options.filename));
+            resolve(path$1.resolve(options.filename));
           } else {
             fs2.readFile(tmpPaths[displayId], function(err2, img) {
               if (err2) {
@@ -3550,7 +3550,7 @@ function requireWin32() {
   hasRequiredWin32 = 1;
   const exec = require$$0$1.exec;
   const temp2 = requireTemp();
-  const path = require$$1;
+  const path$1 = path;
   const utils2 = requireUtils();
   const fs2 = require$$0;
   const os = require$$3$1;
@@ -3559,12 +3559,12 @@ function requireWin32() {
     defaultAll
   } = utils2;
   function copyToTemp() {
-    const tmpBat = path.join(os.tmpdir(), "screenCapture", "screenCapture_1.3.2.bat");
-    const tmpManifest = path.join(os.tmpdir(), "screenCapture", "app.manifest");
-    const includeBat = path.join(__dirname, "screenCapture_1.3.2.bat").replace("app.asar", "app.asar.unpacked");
-    const includeManifest = path.join(__dirname, "app.manifest").replace("app.asar", "app.asar.unpacked");
+    const tmpBat = path$1.join(os.tmpdir(), "screenCapture", "screenCapture_1.3.2.bat");
+    const tmpManifest = path$1.join(os.tmpdir(), "screenCapture", "app.manifest");
+    const includeBat = path$1.join(__dirname, "screenCapture_1.3.2.bat").replace("app.asar", "app.asar.unpacked");
+    const includeManifest = path$1.join(__dirname, "app.manifest").replace("app.asar", "app.asar.unpacked");
     if (!fs2.existsSync(tmpBat)) {
-      const tmpDir = path.join(os.tmpdir(), "screenCapture");
+      const tmpDir = path$1.join(os.tmpdir(), "screenCapture");
       if (!fs2.existsSync(tmpDir)) {
         fs2.mkdirSync(tmpDir);
       }
@@ -3584,11 +3584,11 @@ function requireWin32() {
       const tmpPath = temp2.path({
         suffix: `.${format}`
       });
-      const imgPath = path.resolve(options.filename || tmpPath);
+      const imgPath = path$1.resolve(options.filename || tmpPath);
       const displayChoice = displayName ? ` /d "${displayName}"` : "";
       const tmpBat = copyToTemp();
       exec('"' + tmpBat + '" "' + imgPath + '" ' + displayChoice, {
-        cwd: path.join(os.tmpdir(), "screenCapture"),
+        cwd: path$1.join(os.tmpdir(), "screenCapture"),
         windowsHide: true
       }, (err, stdout) => {
         if (err) {
@@ -3629,7 +3629,7 @@ function requireWin32() {
       exec(
         '"' + tmpBat + '" /list',
         {
-          cwd: path.join(os.tmpdir(), "screenCapture")
+          cwd: path$1.join(os.tmpdir(), "screenCapture")
         },
         (err, stdout) => {
           if (err) {
@@ -3720,17 +3720,32 @@ function getAllDisplays() {
 async function checkAndApplyScreenShareAccessPrivilege(mainWindow2) {
   if (process.platform === "linux" || !mainWindow2)
     return;
-  const screenPrivilege = electron.systemPreferences.getMediaAccessStatus("screen");
-  if (screenPrivilege !== "granted") {
-    const res = await electron.dialog.showMessageBox(mainWindow2, {
-      title: "权限申请",
-      message: "当前应用无屏幕捕获权限，即将跳转至授权页面，请授权后重新启动应用。",
-      textWidth: 450
-    });
+  const screenPrivilege = hasScreenShareAcceessPrivilege();
+  if (!screenPrivilege) {
+    const res = await showNoScreenShareAccessPrivilegeDialog(mainWindow2);
     if (res.response === 0) {
       execCommond(`open x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture`);
     }
   }
+}
+async function showNoScreenShareAccessPrivilegeDialog(window) {
+  if (!window)
+    return { response: 1 };
+  return await electron.dialog.showMessageBox(window, {
+    title: "权限申请",
+    message: "当前应用无屏幕捕获权限，即将跳转至授权页面，请授权后重新启动应用。",
+    textWidth: 450
+  });
+}
+function hasScreenShareAcceessPrivilege() {
+  return electron.systemPreferences.getMediaAccessStatus("screen") === "granted";
+}
+function showNotification(message) {
+  const notification = new electron.Notification({
+    title: "screen shot",
+    body: message
+  });
+  notification.show();
 }
 const isDarwin = require$$3$1.platform() === "darwin";
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
@@ -3742,21 +3757,24 @@ let countOfCaptureWindowToShot = 0;
 const createWindow = () => {
   mainWindow = new electron.BrowserWindow({
     frame: false,
+    icon: path.join(__dirname, "../electron/assets/icon.png"),
     width: 450,
     height: 600,
+    skipTaskbar: false,
+    alwaysOnTop: false,
     webPreferences: {
       webSecurity: false,
       nodeIntegration: false,
       contextIsolation: true,
-      preload: require$$1.join(__dirname, "../dist-electron/preload.js")
+      preload: path.join(__dirname, "../dist-electron/preload.js")
     }
   });
-  mainWindow.hide();
+  mainWindow.setSkipTaskbar(false);
   preloadCaptureWindows();
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(require$$1.join(__dirname, "../dist/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 };
 electron.app.whenReady().then(() => {
@@ -3817,6 +3835,9 @@ function getScreenDataBywId(id) {
   return screenData.find((item) => item.wId === id);
 }
 async function startScreenShot() {
+  if (!hasScreenShareAcceessPrivilege()) {
+    return showNotification("请先授权应用捕获屏幕权限！");
+  }
   captureWindows.forEach((captureWindow) => {
     var _a;
     const bounds = (_a = getScreenDataBywId(captureWindow.id)) == null ? void 0 : _a.bounds;
@@ -3833,6 +3854,7 @@ function addEventListenerOfMain() {
   electron.ipcMain.handle("window:close", () => {
     closeCaptureWindows();
     mainWindow == null ? void 0 : mainWindow.close();
+    electron.app.quit();
     console.log("------> close allWindow success!");
   });
   electron.ipcMain.handle("captureWindow:close", async () => {
