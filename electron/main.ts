@@ -73,7 +73,7 @@ async function init() {
   addEventListenerOfMain();
   createWindow();
   checkAndApplyScreenShareAccessPrivilege(mainWindow);
-  createTray();
+  createTray(mainWindow);
   registerShortcut();
 }
 
@@ -137,17 +137,15 @@ function addEventListenerOfMain(): void {
   ipcMain.handle("captureWindow:sources", async (event, screenId) => {
     return await getCaptureWindowSources(screenId);
   });
-  ipcMain.handle("window:close", () => {
-    closeCaptureWindows();
-    mainWindow?.close();
-    app.quit();
-    console.log("------> close allWindow success!");
+  ipcMain.handle("window:hide", () => {
+    mainWindow?.hide();
+    console.log("------> hide allWindow success!");
   });
   ipcMain.handle("window:minimize", () => {
     mainWindow?.minimize();
     console.log("------> minimize allWindow success!");
   });
-  ipcMain.handle("captureWindow:close", async () => {
+  ipcMain.handle("capturewindow:hide", async () => {
     closeCaptureWindows();
     preloadCaptureWindows();
     console.log("------> close captureWindow success!");

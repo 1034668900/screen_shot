@@ -3747,12 +3747,12 @@ function showNotification(message) {
   });
   notification.show();
 }
-function createTray() {
+function createTray(mainWindow2) {
   const tray = new electron.Tray(path.join(__dirname, "../public/trayIconTemplate@2x.png"));
   const contextMenu = electron.Menu.buildFromTemplate([
-    { label: "exit", type: "checkbox", click: () => electron.app.quit() }
+    { label: "退出程序", type: "checkbox", checked: false, click: () => electron.app.quit() },
+    { label: "显示主页面", type: "checkbox", checked: false, click: () => mainWindow2 == null ? void 0 : mainWindow2.show() }
   ]);
-  tray.setToolTip("This is my application.");
   tray.setContextMenu(contextMenu);
 }
 const isDarwin = require$$3$1.platform() === "darwin";
@@ -3805,7 +3805,7 @@ async function init() {
   addEventListenerOfMain();
   createWindow();
   checkAndApplyScreenShareAccessPrivilege(mainWindow);
-  createTray();
+  createTray(mainWindow);
   registerShortcut();
 }
 function getCaptureWindowById(id) {
@@ -3860,17 +3860,15 @@ function addEventListenerOfMain() {
   electron.ipcMain.handle("captureWindow:sources", async (event, screenId) => {
     return await getCaptureWindowSources(screenId);
   });
-  electron.ipcMain.handle("window:close", () => {
-    closeCaptureWindows();
-    mainWindow == null ? void 0 : mainWindow.close();
-    electron.app.quit();
-    console.log("------> close allWindow success!");
+  electron.ipcMain.handle("window:hide", () => {
+    mainWindow == null ? void 0 : mainWindow.hide();
+    console.log("------> hide allWindow success!");
   });
   electron.ipcMain.handle("window:minimize", () => {
     mainWindow == null ? void 0 : mainWindow.minimize();
     console.log("------> minimize allWindow success!");
   });
-  electron.ipcMain.handle("captureWindow:close", async () => {
+  electron.ipcMain.handle("capturewindow:hide", async () => {
     closeCaptureWindows();
     preloadCaptureWindows();
     console.log("------> close captureWindow success!");

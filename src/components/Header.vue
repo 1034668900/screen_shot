@@ -14,7 +14,7 @@ import close from './icons/close.vue';
 import minimize from './icons/minimize.vue';
 
 const handleClose = () => {
-    window.electronAPI.closeWindow();
+    window.electronAPI.hideWindow();
 }
 const handleMinimize = () => {
     window.electronAPI.minimizeWindow();

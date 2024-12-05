@@ -59,8 +59,7 @@ class captureRender extends Event {
     ctx.drawImage(img, 0, 0);
     // 存储原始背景，为后续截取作准备
     this.$originBackground = ctx;
-    this.addListenerForDrawRectangle();
-    this.addListenerForCanvasDrag();
+    this.addListenerForCapture();
     ctx = null;
     canvas = null;
   }
@@ -219,9 +218,24 @@ class captureRender extends Event {
     );
   }
 
-  drawRectangleDownCallback(e) {
+  addListenerForCapture() {
+    window.addEventListener(
+      'mousedown',
+      this.captureMouseDown.bind(this)
+    );
+    window.addEventListener(
+      'mousemove',
+      this.captureMouseMove.bind(this)
+    );
+    window.addEventListener('mouseup', this.captureMouseUp.bind(this));
+  }
+
+  // 鼠标在截图窗口内点击、移动、抬起都有两种逻辑，一种是框选截图区域，一种是框选区域的拖拽，因此下列监听事件均做了区分处理
+  captureMouseDown(e) {
     if (operateDoms.includes(e.target.id)) return; // 鼠标点击在操作按钮上不触发以下逻辑
-    if (this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
+    if (this.judgePoinstIsInCanvas(e.screenX, e.screenY)) {
+      return this.mouseDownOnCanvas(e);
+    }
     this.isMouseDown = true;
     this.startX = e.screenX;
     this.startY = e.screenY;
@@ -229,28 +243,29 @@ class captureRender extends Event {
     this.clearCanvas();
   }
 
-  drawRectangleMoveCallback(e) {
+  captureMouseMove(e) {
+    if (this.judgePoinstIsInCanvas(e.screenX, e.screenY) || this.isDrag) {
+      return this.mouseMoveOnCanvas(e);
+    }
     if (!this.isMouseDown) return;
     this.endX = e.screenX;
     this.endY = e.screenY;
     this.drawRectangle();
   }
 
-  drawRectangleUpCallback(e) {
-    if (operateDoms.includes(e.target.id)) {
-      return;
+  captureMouseUp(e) {
+    if (operateDoms.includes(e.target.id)) return;
+    if (this.isDrag) {
+      return this.mouseUpOnCanvas(e);
     }
     this.isMouseDown = false;
-    this.isDrag = false;
     if (this.isLegalOfRectSize()) {
-      this.showToolBar();
-    } else {
-      this.clearCanvas();
+      return this.showToolBar();
     }
+    this.clearCanvas();
   }
 
-  dragCanvasDownCallback(e) {
-    if (!this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
+  mouseDownOnCanvas(e) {
     const { startX, startY } = this.shotRect;
     this.isDrag = true;
     this.dragPointX = e.screenX;
@@ -260,9 +275,8 @@ class captureRender extends Event {
     this.hideToolBar();
   }
 
-  dragCanvasMoveCallback(e) {
+  mouseMoveOnCanvas(e) {
     if (!this.isDrag) return;
-    if (!this.judgePoinstIsInCanvas(e.screenX, e.screenY)) return;
     this.dragPointX = e.screenX;
     this.dragPointY = e.screenY;
 
@@ -285,38 +299,9 @@ class captureRender extends Event {
     this.drawRectangle();
   }
 
-  dragCanvasUpCallback(e) {
+  mouseUpOnCanvas(e) {
     this.isDrag = false;
     this.showToolBar();
-  }
-
-  addListenerForDrawRectangle() {
-    window.addEventListener(
-      'mousedown',
-      this.drawRectangleDownCallback.bind(this)
-    );
-    window.addEventListener(
-      'mousemove',
-      this.drawRectangleMoveCallback.bind(this)
-    );
-    window.addEventListener('mouseup', this.drawRectangleUpCallback.bind(this));
-  }
-
-  addListenerForCanvasDrag() {
-    this.$canvas.addEventListener(
-      'mousedown',
-      this.dragCanvasDownCallback.bind(this)
-    );
-
-    this.$canvas.addEventListener(
-      'mousemove',
-      this.dragCanvasMoveCallback.bind(this)
-    );
-
-    this.$canvas.addEventListener(
-      'mouseup',
-      this.dragCanvasUpCallback.bind(this)
-    );
   }
 }
 

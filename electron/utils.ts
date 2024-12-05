@@ -106,12 +106,12 @@ function showNotification(message: string) {
   notification.show();
 }
 
-function createTray() {
+function createTray(mainWindow?: BrowserWindow | null) {
   const tray = new Tray(path.join(__dirname, "../public/trayIconTemplate@2x.png"))
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'exit', type: 'checkbox', click: () =>  app.quit()},
+    { label: '退出程序', type: 'checkbox', checked: false, click: () =>  app.quit()},
+    { label: '显示主页面', type: 'checkbox', checked: false, click: () =>  mainWindow?.show()},
   ])
-  tray.setToolTip('This is my application.')
   tray.setContextMenu(contextMenu)
 }
 
