@@ -27,12 +27,17 @@ class captureRender extends Event {
     this.init(...args);
   }
 
-  init($canvas, $bg, $toolBar, imgDataURL, screenData) {
+  init($canvas, $bg, $toolBar, $topLeftAngle, $topRightAngle, $bottomLeftAngle, $bottomRightAngle, imgDataURL, screenData) {
     const { bounds, scaleFactor, size } = screenData;
     this.$canvas = $canvas;
     this.ctx = $canvas.getContext('2d', { willReadFrequently: true });
     this.$bg = $bg;
     this.$toolBar = $toolBar;
+    this.$topLeftAngle = $topLeftAngle;
+    this.$topRightAngle = $topRightAngle;
+    this.$bottomLeftAngle = $bottomLeftAngle;
+    this.$bottomRightAngle = $bottomRightAngle;
+    this.canvasOperateAngleLength = parseInt(getComputedStyle(this.$topLeftAngle).width);
     this.toolBarWidth = parseInt(getComputedStyle(this.$toolBar).width);
     this.toolBarHeight = parseInt(getComputedStyle(this.$toolBar).height);
     this.imgDataURL = imgDataURL;
@@ -102,7 +107,7 @@ class captureRender extends Event {
     );
   }
 
-  drawRectangle() {
+  drawCanvas() {
     this.isCapture = true;
 
     const tempStartX = Math.min(this.startX, this.endX) - this.relativeX;
@@ -161,8 +166,38 @@ class captureRender extends Event {
       width * scaleFactor,
       height * scaleFactor
     );
+    this.drawCanvasAngle();
   }
+  drawCanvasAngle() {
+    const { startX, startY, width, height } = this.shotRect;
+    const lineWidth = 3;
+    const gap = 2;
 
+    const lineColor = '#00B5FF';
+    this.$topLeftAngle.style.left = `${startX - gap}px`;
+    this.$topLeftAngle.style.top = `${startY - gap}px`;
+    this.$topLeftAngle.style.cursor = `nw-resize`;
+    this.$topLeftAngle.style.borderTop = `${lineWidth}px solid ${lineColor}`;
+    this.$topLeftAngle.style.borderLeft = `${lineWidth}px solid ${lineColor}`;
+
+    this.$topRightAngle.style.left = `${startX + width - this.canvasOperateAngleLength + gap}px`;
+    this.$topRightAngle.style.top = `${startY - gap}px`;
+    this.$topRightAngle.style.cursor = `ne-resize`;
+    this.$topRightAngle.style.borderTop = `${lineWidth}px solid ${lineColor}`;
+    this.$topRightAngle.style.borderRight = `${lineWidth}px solid ${lineColor}`;
+
+    this.$bottomLeftAngle.style.left = `${startX - gap}px`;
+    this.$bottomLeftAngle.style.top = `${startY + height - this.canvasOperateAngleLength + gap}px`;
+    this.$bottomLeftAngle.style.cursor = `sw-resize`;
+    this.$bottomLeftAngle.style.borderBottom = `${lineWidth}px solid ${lineColor}`;
+    this.$bottomLeftAngle.style.borderLeft = `${lineWidth}px solid ${lineColor}`;
+
+    this.$bottomRightAngle.style.left = `${startX + width - this.canvasOperateAngleLength + gap}px`;
+    this.$bottomRightAngle.style.top = `${startY + height - this.canvasOperateAngleLength + gap}px`;
+    this.$bottomRightAngle.style.cursor = `se-resize`;
+    this.$bottomRightAngle.style.borderBottom = `${lineWidth}px solid ${lineColor}`;
+    this.$bottomRightAngle.style.borderRight = `${lineWidth}px solid ${lineColor}`;
+  }
   hideToolBar() {
     this.$toolBar.style.display = 'none';
   }
@@ -250,7 +285,7 @@ class captureRender extends Event {
     if (!this.isMouseDown) return;
     this.endX = e.screenX;
     this.endY = e.screenY;
-    this.drawRectangle();
+    this.drawCanvas();
   }
 
   captureMouseUp(e) {
@@ -296,7 +331,7 @@ class captureRender extends Event {
     this.endX = this.startX + this.canvasWidth;
     this.endY = this.startY + this.canvasHeight;
 
-    this.drawRectangle();
+    this.drawCanvas();
   }
 
   mouseUpOnCanvas(e) {

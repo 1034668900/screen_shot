@@ -8,7 +8,11 @@ const DomsName = [
   'operate-download',
   'operate-cancel',
   'operate-save',
-  'mask-describe'
+  'mask-describe',
+  'top-left-angle',
+  'top-right-angle',
+  'bottom-left-angle',
+  'bottom-right-angle',
 ];
 
 const Doms = {};
@@ -76,8 +80,7 @@ function handleClearCanvas() {
 }
 
 function handleStartShow() {
-  Doms['capture-mask'].style.background = 'rgba(0, 0, 0, .6)';
-  Doms['mask-describe'].style.display = 'flex';
+  updateDomStyle();
   const imgBlob = new Blob([imgBuffer], { type: 'image/png' });
   reader.readAsDataURL(imgBlob);
   reader.onloadend = () => {
@@ -85,11 +88,21 @@ function handleStartShow() {
       Doms['capture-canvas'],
       Doms['capture-bg'],
       Doms['tool-bar'],
+      Doms['top-left-angle'],
+      Doms['top-right-angle'],
+      Doms['bottom-left-angle'],
+      Doms['bottom-right-angle'],
       reader.result,
       screenData
     );
   };
   addMouseOverListener();
+}
+
+function updateDomStyle() {
+  if (!Doms['capture-mask'] || !Doms['mask-describe']) return;
+  Doms['capture-mask'].style.background = 'rgba(0, 0, 0, .5)';
+  Doms['mask-describe'].style.display = 'flex';
 }
 
 function addMouseOverListener() {

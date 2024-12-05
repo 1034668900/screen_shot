@@ -24,7 +24,7 @@
       }
       #capture-canvas {
         position: absolute;
-        z-index: 999;
+        z-index: 99;
       }
       #capture-bg {
         position: absolute;
@@ -73,6 +73,13 @@
         height: var(--tool-icon-height);
         cursor: pointer;
       }
+      .drag-angle {
+        position: absolute;
+        width: 0.875rem;
+        height: 0.875rem;
+        background-color: transparent;
+        z-index: 999;
+      }
     </style>
   </head>
   <body>
@@ -84,6 +91,12 @@
       </div>
     </div>
     <canvas id="capture-canvas"></canvas>
+    <div id="canvas-drag">
+      <div class="drag-angle" id="top-left-angle"></div>
+      <div class="drag-angle" id="top-right-angle"></div>
+      <div class="drag-angle" id="bottom-left-angle"></div>
+      <div class="drag-angle" id="bottom-right-angle"></div>
+    </div>
     <div id="tool-bar">
       <img id="operate-cancel" class="operate-button" src="../assets/close.svg" alt="取消">
       <img id="operate-download" class="operate-button" src="../assets/download.svg" alt="下载">
