@@ -1,9 +1,13 @@
 import { operateDoms } from './capture.js';
 
 class captureRender extends Event {
-  isMouseDown = false;
+  isMouseDownNonCanvas = false; // 鼠标点击非canvas区域标志位
+  isDragCanvas = false; // 鼠标拖拽 canvas 的标志位
+  isDragCanvasLeftTopAngle = false; // 鼠标拖拽canvas左上角的标志位
+  isDragCanvasRightTopAngle = false; // 鼠标拖拽canvas右上角的标志位
+  isDragCanvasLeftBottomAngle = false; // 鼠标拖拽canvas左下角的标志位
+  isDragCanvasRightBottomAngle = false; // 鼠标拖拽canvas右下角的标志位
   isCapture = false;
-  isDrag = false;
   relativeX = 0;
   relativeY = 0;
   startX = 0;
@@ -27,7 +31,17 @@ class captureRender extends Event {
     this.init(...args);
   }
 
-  init($canvas, $bg, $toolBar, $topLeftAngle, $topRightAngle, $bottomLeftAngle, $bottomRightAngle, imgDataURL, screenData) {
+  init(
+    $canvas,
+    $bg,
+    $toolBar,
+    $topLeftAngle,
+    $topRightAngle,
+    $bottomLeftAngle,
+    $bottomRightAngle,
+    imgDataURL,
+    screenData
+  ) {
     const { bounds, scaleFactor, size } = screenData;
     this.$canvas = $canvas;
     this.ctx = $canvas.getContext('2d', { willReadFrequently: true });
@@ -37,7 +51,9 @@ class captureRender extends Event {
     this.$topRightAngle = $topRightAngle;
     this.$bottomLeftAngle = $bottomLeftAngle;
     this.$bottomRightAngle = $bottomRightAngle;
-    this.canvasOperateAngleLength = parseInt(getComputedStyle(this.$topLeftAngle).width);
+    this.canvasOperateAngleLength = parseInt(
+      getComputedStyle(this.$topLeftAngle).width
+    );
     this.toolBarWidth = parseInt(getComputedStyle(this.$toolBar).width);
     this.toolBarHeight = parseInt(getComputedStyle(this.$toolBar).height);
     this.imgDataURL = imgDataURL;
@@ -96,15 +112,6 @@ class captureRender extends Event {
     return new Promise((resolve) => {
       img.onload = () => resolve(img);
     });
-  }
-
-  judgePoinstIsInCanvas(x, y) {
-    return (
-      x >= this.relativeX &&
-      x <= this.screenEndX &&
-      y >= this.relativeY &&
-      y <= this.screenEndY
-    );
   }
 
   drawCanvas() {
@@ -174,26 +181,35 @@ class captureRender extends Event {
     const gap = 2;
 
     const lineColor = '#00B5FF';
+    this.showAngleButton();
     this.$topLeftAngle.style.left = `${startX - gap}px`;
     this.$topLeftAngle.style.top = `${startY - gap}px`;
     this.$topLeftAngle.style.cursor = `nw-resize`;
     this.$topLeftAngle.style.borderTop = `${lineWidth}px solid ${lineColor}`;
     this.$topLeftAngle.style.borderLeft = `${lineWidth}px solid ${lineColor}`;
 
-    this.$topRightAngle.style.left = `${startX + width - this.canvasOperateAngleLength + gap}px`;
+    this.$topRightAngle.style.left = `${
+      startX + width - this.canvasOperateAngleLength + gap
+    }px`;
     this.$topRightAngle.style.top = `${startY - gap}px`;
     this.$topRightAngle.style.cursor = `ne-resize`;
     this.$topRightAngle.style.borderTop = `${lineWidth}px solid ${lineColor}`;
     this.$topRightAngle.style.borderRight = `${lineWidth}px solid ${lineColor}`;
 
     this.$bottomLeftAngle.style.left = `${startX - gap}px`;
-    this.$bottomLeftAngle.style.top = `${startY + height - this.canvasOperateAngleLength + gap}px`;
+    this.$bottomLeftAngle.style.top = `${
+      startY + height - this.canvasOperateAngleLength + gap
+    }px`;
     this.$bottomLeftAngle.style.cursor = `sw-resize`;
     this.$bottomLeftAngle.style.borderBottom = `${lineWidth}px solid ${lineColor}`;
     this.$bottomLeftAngle.style.borderLeft = `${lineWidth}px solid ${lineColor}`;
 
-    this.$bottomRightAngle.style.left = `${startX + width - this.canvasOperateAngleLength + gap}px`;
-    this.$bottomRightAngle.style.top = `${startY + height - this.canvasOperateAngleLength + gap}px`;
+    this.$bottomRightAngle.style.left = `${
+      startX + width - this.canvasOperateAngleLength + gap
+    }px`;
+    this.$bottomRightAngle.style.top = `${
+      startY + height - this.canvasOperateAngleLength + gap
+    }px`;
     this.$bottomRightAngle.style.cursor = `se-resize`;
     this.$bottomRightAngle.style.borderBottom = `${lineWidth}px solid ${lineColor}`;
     this.$bottomRightAngle.style.borderRight = `${lineWidth}px solid ${lineColor}`;
@@ -207,6 +223,22 @@ class captureRender extends Event {
     this.canvasWidth = 0;
     this.canvasHeight = 0;
     this.isCapture = false;
+    this.hideAngleButton();
+    this.hideToolBar();
+  }
+
+  hideAngleButton() {
+    this.$topLeftAngle.style.display = 'none';
+    this.$topRightAngle.style.display = 'none';
+    this.$bottomLeftAngle.style.display = 'none';
+    this.$bottomRightAngle.style.display = 'none';
+  }
+
+  showAngleButton() {
+    this.$topLeftAngle.style.display = 'block';
+    this.$topRightAngle.style.display = 'block';
+    this.$bottomLeftAngle.style.display = 'block';
+    this.$bottomRightAngle.style.display = 'block';
   }
 
   isLegalOfRectSize() {
@@ -241,7 +273,7 @@ class captureRender extends Event {
     electronAPI.downloadImage(id, this.getShotRectImageURL());
   }
 
-  judgePoinstIsInCanvas(x, y) {
+  isWantToMoveCanvas(x, y) {
     const { startX, startY, width, height } = this.shotRect;
     const left = x - this.relativeX;
     const top = y - this.relativeY;
@@ -253,25 +285,93 @@ class captureRender extends Event {
     );
   }
 
+  isWantToDragLeftTopCanvas(x, y) {
+    const { startX, startY } = this.shotRect;
+    const offset = 3;
+    const width = parseInt(getComputedStyle(this.$topLeftAngle).width);
+    const height = parseInt(getComputedStyle(this.$topLeftAngle).height);
+    return (
+      x >= startX - offset + this.relativeX &&
+      y >= startY - offset + this.relativeY &&
+      x <= startX + width + offset + this.relativeX &&
+      y <= startY + height + offset + this.relativeY
+    );
+  }
+
+  isWantToDragRightTopCanvas(x, y) {
+    const { startX, startY, width: canvasWidth} = this.shotRect;
+    const offset = 3;
+    const width = parseInt(getComputedStyle(this.$topRightAngle).width);
+    const height = parseInt(getComputedStyle(this.$topRightAngle).height);
+    return (
+      x >= startX + canvasWidth - width - offset + this.relativeX &&
+      y >= startY - offset + this.relativeY &&
+      y <= startY + height + offset + this.relativeY &&
+      x <= startX + canvasWidth + width + offset + this.relativeX
+    )
+  }
+  isWantToDragLeftBottomCanvas(x, y) {
+    const { startX, startY, height: canvasHeight } = this.shotRect;
+    const offset = 3;
+    const width = parseInt(getComputedStyle(this.$topLeftAngle).width);
+    const height = parseInt(getComputedStyle(this.$topLeftAngle).height);
+    return (
+      x >= startX - offset + this.relativeX &&
+      y >= startY + canvasHeight - offset + this.relativeY &&
+      x <= startX + width + offset + this.relativeX &&
+      y <= startY + canvasHeight + height + offset + this.relativeY
+    );
+  }
+  isWantToDragRightBottomCanvas(x, y) {
+    const { startX, startY,width: canvasWidth, height: canvasHeight } = this.shotRect;
+    const offset = 3;
+    const width = parseInt(getComputedStyle(this.$topLeftAngle).width);
+    const height = parseInt(getComputedStyle(this.$topLeftAngle).height);
+    return (
+      x >= startX + canvasWidth - width - offset + this.relativeX &&
+      y >= startY + canvasHeight - offset + this.relativeY &&
+      y <= startY + canvasHeight + height + offset + this.relativeY &&
+      x <= startX + canvasWidth + width + offset + this.relativeX
+    )
+  }
+
   addListenerForCapture() {
-    window.addEventListener(
-      'mousedown',
-      this.captureMouseDown.bind(this)
-    );
-    window.addEventListener(
-      'mousemove',
-      this.captureMouseMove.bind(this)
-    );
+    window.addEventListener('mousedown', this.captureMouseDown.bind(this));
+    window.addEventListener('mousemove', this.captureMouseMove.bind(this));
     window.addEventListener('mouseup', this.captureMouseUp.bind(this));
   }
 
-  // 鼠标在截图窗口内点击、移动、抬起都有两种逻辑，一种是框选截图区域，一种是框选区域的拖拽，因此下列监听事件均做了区分处理
+  // 鼠标在截图窗口内点击会因为点击的位置不同从而有不同的逻辑
   captureMouseDown(e) {
     if (operateDoms.includes(e.target.id)) return; // 鼠标点击在操作按钮上不触发以下逻辑
-    if (this.judgePoinstIsInCanvas(e.screenX, e.screenY)) {
-      return this.mouseDownOnCanvas(e);
+    this.resetStatusWhenMouseUp();
+    // 鼠标点击 canvas 左上角
+    if (this.isWantToDragLeftTopCanvas(e.screenX, e.screenY)) {
+      this.dragLeftTopAngleMouseDown();
+      return;
     }
-    this.isMouseDown = true;
+    // 鼠标点击 canvas 右上角
+    if (this.isWantToDragRightTopCanvas(e.screenX, e.screenY)) {
+      this.dragRightTopAngleMouseDown();
+      return;
+    }
+    // 鼠标点击 canvas 左下角
+    if (this.isWantToDragLeftBottomCanvas(e.screenX, e.screenY)) {
+      this.dragLeftBottomAngleMouseDown();
+      return;
+    }
+    // 鼠标点击 canvas 右下角
+    if (this.isWantToDragRightBottomCanvas(e.screenX, e.screenY)) {
+      this.dragRightBottomAngleMouseDown();
+      return;
+    }
+    // 鼠标点击 canvas 区域
+    if (this.isWantToMoveCanvas(e.screenX, e.screenY)) {
+      this.mouseDownOnDragCanvas(e);
+      return;
+    }
+    // 鼠标点击非 canvas 区域
+    this.isMouseDownNonCanvas = true;
     this.startX = e.screenX;
     this.startY = e.screenY;
     this.hideToolBar();
@@ -279,30 +379,57 @@ class captureRender extends Event {
   }
 
   captureMouseMove(e) {
-    if (this.judgePoinstIsInCanvas(e.screenX, e.screenY) || this.isDrag) {
-      return this.mouseMoveOnCanvas(e);
+    if (
+      !this.isDragCanvasLeftTopAngle &&
+      !this.isMouseDownNonCanvas &&
+      !this.isDragCanvas &&
+      !this.isDragCanvasRightTopAngle &&
+      !this.isDragCanvasLeftBottomAngle &&
+      !this.isDragCanvasRightBottomAngle) return;
+    this.hideToolBar();
+    // 鼠标按住 canvas 左上角移动
+    if (this.isDragCanvasLeftTopAngle) {
+      this.dragLeftTopAngleMouseMove(e);
     }
-    if (!this.isMouseDown) return;
-    this.endX = e.screenX;
-    this.endY = e.screenY;
-    this.drawCanvas();
+    // 鼠标按住 canvas 右上角移动
+    if (this.isDragCanvasRightTopAngle) {
+      this.dragRightTopAngleMouseMove(e);
+    }
+    // 鼠标按住 canvas 左上角移动
+    if (this.isDragCanvasLeftBottomAngle) {
+      this.dragLeftBottomAngleMouseMove(e);
+    }
+    // 鼠标按住 canvas 右下角移动
+    if (this.isDragCanvasRightBottomAngle) {
+      this.dragRightBottomAngleMouseMove(e);
+    }
+    if (this.isDragCanvas) {
+      this.mouseMoveOnDragCanvas(e);
+    }
+    if (this.isMouseDownNonCanvas) {
+      this.endX = e.screenX;
+      this.endY = e.screenY;
+      this.drawCanvas();
+    }
   }
 
-  captureMouseUp(e) {
-    if (operateDoms.includes(e.target.id)) return;
-    if (this.isDrag) {
-      return this.mouseUpOnCanvas(e);
-    }
-    this.isMouseDown = false;
-    if (this.isLegalOfRectSize()) {
-      return this.showToolBar();
-    }
-    this.clearCanvas();
+  captureMouseUp() {
+    this.resetStatusWhenMouseUp();
+    this.showToolBar();
   }
 
-  mouseDownOnCanvas(e) {
+  resetStatusWhenMouseUp() {
+    this.isDragCanvas = false;
+    this.isMouseDownNonCanvas = false;
+    this.isDragCanvasLeftTopAngle = false;
+    this.isDragCanvasRightTopAngle = false;
+    this.isDragCanvasRightBottomAngle = false;
+    this.isDragCanvasLeftBottomAngle = false;
+  }
+
+  mouseDownOnDragCanvas(e) {
     const { startX, startY } = this.shotRect;
-    this.isDrag = true;
+    this.isDragCanvas = true;
     this.dragPointX = e.screenX;
     this.dragPointY = e.screenY;
     this.dragDiffWidth = this.dragPointX - startX;
@@ -310,8 +437,8 @@ class captureRender extends Event {
     this.hideToolBar();
   }
 
-  mouseMoveOnCanvas(e) {
-    if (!this.isDrag) return;
+  mouseMoveOnDragCanvas(e) {
+    if (!this.isDragCanvas) return;
     this.dragPointX = e.screenX;
     this.dragPointY = e.screenY;
 
@@ -334,9 +461,136 @@ class captureRender extends Event {
     this.drawCanvas();
   }
 
-  mouseUpOnCanvas(e) {
-    this.isDrag = false;
-    this.showToolBar();
+  // 拖拽左上角
+  dragLeftTopAngleMouseDown() {
+    this.isDragCanvasLeftTopAngle = true;
+    this.stickPointX = this.endX + this.relativeX;
+    this.stickPointY = this.endY + this.relativeY;
+  }
+  dragLeftTopAngleMouseMove(e) {
+    this.startX = e.screenX;
+    this.startY = e.screenY;
+    this.endX = this.stickPointX;
+    this.endY = this.stickPointY;
+    this.drawCanvas();
+  }
+
+  // 拖拽右上角
+  dragRightTopAngleMouseDown() {
+    this.isDragCanvasRightTopAngle = true;
+    const { startX, startY,height } = this.shotRect;
+    this.stickPointX = startX + this.relativeX;
+    this.stickPointY = startY + height + this.relativeY;
+  }
+  dragRightTopAngleMouseMove(e) {
+    const width = e.screenX - this.stickPointX;
+    const height = e.screenY - this.stickPointY;
+
+    // 右上角正向拉
+    if (width > 0 && height < 0) {
+      this.startX = this.stickPointX;
+      this.startY = this.stickPointY + height;
+      this.endX = this.startX + width;
+      this.endY = this.stickPointY;
+    }
+    // 右上角宽小于固定点， 高小于固定点
+    if (width < 0 && height < 0) {
+      this.endX = this.stickPointX;
+      this.endY = this.stickPointY;
+      this.startX = this.endX + width;
+      this.startY = this.endY + height;
+    }
+    // 右上角反向拉
+    if (width < 0 && height > 0) {
+      this.endX = this.stickPointX;
+      this.endY = this.stickPointY + height;
+      this.startX = this.endX + width;
+      this.startY = this.endY - height;
+    }
+    // 右上角宽大于固定点，高大于固定点
+    if (width > 0 && height > 0) {
+      this.startX = this.stickPointX;
+      this.startY = this.stickPointY;
+      this.endX = this.startX + width;
+      this.endY = this.startY + height;
+    }
+    this.drawCanvas();
+  }
+
+  // 拖拽左下角
+  dragLeftBottomAngleMouseDown() {
+    this.isDragCanvasLeftBottomAngle = true;
+    const { startX, startY, width } = this.shotRect;
+    this.stickPointX = startX + width + this.relativeX;
+    this.stickPointY = startY + this.relativeY;
+  }
+  dragLeftBottomAngleMouseMove(e) {
+    const width = e.screenX - this.stickPointX;
+    const height = e.screenY - this.stickPointY;
+
+    if (width < 0 && height > 0) {
+      this.startX = this.stickPointX + width;
+      this.startY = this.stickPointY;
+      this.endX = this.stickPointX;
+      this.endY = this.stickPointY + height;
+    }
+    if (width < 0 && height < 0) {
+      this.endX = this.stickPointX;
+      this.endY = this.stickPointY;
+      this.startX = this.endX + width;
+      this.startY = this.endY + height;
+    }
+    if (width > 0 && height > 0) {
+      this.startX = this.stickPointX;
+      this.startY = this.stickPointY;
+      this.endX = this.startX + width;
+      this.endY = this.startY + height;
+    }
+    if (width > 0 && height < 0) {
+      this.startX = this.stickPointX;
+      this.startY = this.stickPointY + height;
+      this.endX = this.startX + width;
+      this.endY = this.startY - height;
+    }
+    this.drawCanvas();
+  }
+
+  // 拖拽右下角
+  dragRightBottomAngleMouseDown() {
+    this.isDragCanvasRightBottomAngle = true;
+    const { startX, startY } = this.shotRect;
+    this.stickPointX = startX + this.relativeX;
+    this.stickPointY = startY + this.relativeY;
+  }
+  dragRightBottomAngleMouseMove(e) {
+    const width = e.screenX - this.stickPointX;
+    const height = e.screenY - this.stickPointY;
+
+    if (width > 0 && height > 0) {
+      this.startX = this.stickPointX;
+      this.startY = this.stickPointY;
+      this.endX = this.startX + width;
+      this.endY = this.startY + height;
+    }
+    if (width < 0 && height < 0) {
+      this.endX = this.stickPointX;
+      this.endY = this.stickPointY;
+      this.startX = this.endX + width;
+      this.startY = this.endY + height;
+    }
+    if (width > 0 && height < 0) {
+      this.startX = this.stickPointX;
+      this.startY = this.stickPointY + height;
+      this.endX = this.startY - height;
+      this.endY = this.stickPointY
+    }
+    if (width < 0 && height > 0) {
+      this.startY = this.stickPointY;
+      this.endX = this.stickPointX;
+      this.startX = this.endX + width;
+      this.endY = this.startY + height;
+    }
+    this.drawCanvas();
   }
 }
 

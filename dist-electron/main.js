@@ -24,7 +24,7 @@ async function createCaptureWindow(isDarwin2) {
     enableLargerThanScreen: true,
     //mac
     skipTaskbar: true,
-    alwaysOnTop: true,
+    // alwaysOnTop: true,
     hasShadow: false,
     webPreferences: {
       webSecurity: false,
@@ -35,7 +35,6 @@ async function createCaptureWindow(isDarwin2) {
   });
   captureWindow.setOpacity(0);
   captureWindow.setIgnoreMouseEvents(true);
-  captureWindow.setAlwaysOnTop(true, "screen-saver", 999);
   captureWindow.setVisibleOnAllWorkspaces(true, {
     visibleOnFullScreen: true
   });

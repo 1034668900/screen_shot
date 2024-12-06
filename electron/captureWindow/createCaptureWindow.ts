@@ -15,7 +15,7 @@ export async function createCaptureWindow(isDarwin: boolean): Promise<BrowserWin
     autoHideMenuBar: true,
     enableLargerThanScreen: true,//mac
     skipTaskbar: true,
-    alwaysOnTop: true,
+    // alwaysOnTop: true,
     hasShadow: false,
     webPreferences: {
       webSecurity: false,
@@ -26,7 +26,7 @@ export async function createCaptureWindow(isDarwin: boolean): Promise<BrowserWin
   });
   captureWindow.setOpacity(0);
   captureWindow.setIgnoreMouseEvents(true);
-  captureWindow.setAlwaysOnTop(true, "screen-saver", 999);
+  // captureWindow.setAlwaysOnTop(true, "screen-saver", 999);
   captureWindow.setVisibleOnAllWorkspaces(true, {
     visibleOnFullScreen: true
   });
