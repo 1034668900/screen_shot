@@ -90,7 +90,7 @@ class captureRender extends Event {
     const toolBarLeft =
       startY + height >= this.screenEndY - this.toolBarHeight
         ? startX + width + 5
-        : startX + width - this.toolBarWidth;
+        : startX + width * 1/2 - this.toolBarWidth * 1/2;
     const toolBarTop =
       startY + height >= this.screenEndY - this.toolBarHeight
         ? startY + height - this.toolBarHeight

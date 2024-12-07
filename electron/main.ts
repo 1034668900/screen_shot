@@ -212,6 +212,7 @@ function registerShortcut() {
     });
   } else {
     globalShortcut.register("Ctrl+P", () => {
+      if (countOfCaptureWindowToShot === captureWindows.length) return;
       startScreenShot();
     });
   }

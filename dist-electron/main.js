@@ -3934,6 +3934,8 @@ function registerShortcut() {
     });
   } else {
     electron.globalShortcut.register("Ctrl+P", () => {
+      if (countOfCaptureWindowToShot === captureWindows.length)
+        return;
       startScreenShot();
     });
   }
