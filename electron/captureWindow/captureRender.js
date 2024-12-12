@@ -174,6 +174,8 @@ class captureRender extends Event {
       height * scaleFactor
     );
     this.drawCanvasAngle();
+    if (!this.isLegalOfRectSize()) this.hideAngleButton();
+    else this.showAngleButton();
   }
   drawCanvasAngle() {
     const { startX, startY, width, height } = this.shotRect;
@@ -181,7 +183,6 @@ class captureRender extends Event {
     const gap = 2;
 
     const lineColor = '#00B5FF';
-    this.showAngleButton();
     this.$topLeftAngle.style.left = `${startX - gap}px`;
     this.$topLeftAngle.style.top = `${startY - gap}px`;
     this.$topLeftAngle.style.cursor = `nw-resize`;
@@ -242,7 +243,7 @@ class captureRender extends Event {
   }
 
   isLegalOfRectSize() {
-    return this.canvasWidth > 5 && this.canvasHeight > 5;
+    return this.canvasWidth > 12 && this.canvasHeight > 12;
   }
 
   getShotRectImageURL() {
@@ -414,6 +415,7 @@ class captureRender extends Event {
   }
 
   captureMouseUp() {
+    if (!this.isLegalOfRectSize()) return;
     this.resetStatusWhenMouseUp();
     this.showToolBar();
   }
